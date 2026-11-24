@@ -16,6 +16,8 @@ import {
   Bell,
   ScrollText,
   Settings,
+  Building2,
+  BookOpen,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -32,6 +34,8 @@ const iconMap: Record<string, LucideIcon> = {
   Bell,
   ScrollText,
   Settings,
+  Building2,
+  BookOpen,
 };
 
 interface SidebarProps {

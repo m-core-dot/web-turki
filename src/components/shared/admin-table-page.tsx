@@ -3,13 +3,14 @@
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
+import { DataTable, type DataTableFilter } from "@/components/shared/data-table";
 
 interface AdminTablePageProps<T> {
   title: string;
   description: string;
   action?: ReactNode;
   data: T[];
+  filters?: DataTableFilter<T>[];
   columns: Array<{
     key: string;
     label: string;
@@ -26,6 +27,7 @@ export function AdminTablePage<T>({
   description,
   action,
   data,
+  filters,
   columns,
   keyExtractor,
   searchPlaceholder,
@@ -38,6 +40,7 @@ export function AdminTablePage<T>({
       <Card padding="none">
         <DataTable
           data={data}
+          filters={filters}
           columns={columns}
           keyExtractor={keyExtractor}
           searchPlaceholder={searchPlaceholder}

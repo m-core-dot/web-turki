@@ -323,6 +323,25 @@ export const mockDocuments: MockDocument[] = [
   { id: "DOC-005", student: "Yusuf Abdurrahman", type: "Foto", uploadedAt: "20 Nov 2026", version: "v1", status: "approved" },
 ];
 
+export interface MockFaculty { id: string; name: string; university: string; majors: number; status: "active" | "inactive"; }
+export const mockFaculties: MockFaculty[] = [
+  { id: "FAC-001", name: "Faculty of Engineering", university: "Istanbul University", majors: 8, status: "active" },
+  { id: "FAC-002", name: "Faculty of Economics", university: "Ankara University", majors: 6, status: "active" },
+  { id: "FAC-003", name: "Faculty of Communication", university: "Sakarya University", majors: 4, status: "active" },
+  { id: "FAC-004", name: "Faculty of Architecture", university: "Bursa Uludağ University", majors: 3, status: "inactive" },
+  { id: "FAC-005", name: "Faculty of Medicine", university: "Marmara University", majors: 2, status: "active" },
+];
+
+export interface MockMajor { id: string; name: string; faculty: string; university: string; degree: "Bachelor" | "Master"; status: "active" | "inactive"; }
+export const mockMajors: MockMajor[] = [
+  { id: "MJR-001", name: "Computer Engineering", faculty: "Faculty of Engineering", university: "Istanbul University", degree: "Bachelor", status: "active" },
+  { id: "MJR-002", name: "Industrial Engineering", faculty: "Faculty of Engineering", university: "Istanbul University", degree: "Bachelor", status: "active" },
+  { id: "MJR-003", name: "Business Administration", faculty: "Faculty of Economics", university: "Ankara University", degree: "Bachelor", status: "active" },
+  { id: "MJR-004", name: "International Relations", faculty: "Faculty of Economics", university: "Ankara University", degree: "Bachelor", status: "active" },
+  { id: "MJR-005", name: "Architecture", faculty: "Faculty of Architecture", university: "Bursa Uludağ University", degree: "Bachelor", status: "inactive" },
+  { id: "MJR-006", name: "Data Science", faculty: "Faculty of Engineering", university: "Istanbul University", degree: "Master", status: "active" },
+];
+
 export interface MockUniversity { id: string; name: string; city: string; faculties: number; intakes: number; status: "active" | "inactive"; }
 export const mockUniversities: MockUniversity[] = [
   { id: "UNI-001", name: "Istanbul University", city: "Istanbul", faculties: 8, intakes: 2, status: "active" },

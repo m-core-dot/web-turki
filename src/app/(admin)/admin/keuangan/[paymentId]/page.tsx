@@ -1,0 +1,9 @@
+import Link from "next/link";
+import { ArrowLeft, Receipt } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
+import { Card } from "@/components/ui/card";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { mockPayments } from "@/lib/mock-data";
+
+export function generateStaticParams() { return mockPayments.map((item) => ({ paymentId: item.id })); }
+export default function PaymentDetailPage({ params }: { params: { paymentId: string } }) { const payment = mockPayments.find((item) => item.id === params.paymentId) ?? mockPayments[0]; return <div className="space-y-6"><Link href="/admin/keuangan" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"><ArrowLeft className="h-4 w-4" />Kembali ke keuangan</Link><PageHeader title="Detail Pembayaran" description={payment.id} /><Card><div className="flex items-start gap-4"><div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50"><Receipt className="h-6 w-6 text-primary-700" /></div><div className="flex-1"><h2 className="font-semibold">{payment.category}</h2><p className="mt-1 text-sm text-muted">{payment.student}</p></div><StatusBadge status={payment.status} /></div><div className="mt-7 grid gap-5 border-t border-border pt-5 sm:grid-cols-3"><div><p className="text-xs text-muted">Nominal</p><p className="mt-1 text-lg font-bold tabular-nums">{payment.amount}</p></div><div><p className="text-xs text-muted">Jatuh tempo</p><p className="mt-1 text-sm font-medium">{payment.dueDate}</p></div><div><p className="text-xs text-muted">Peserta</p><p className="mt-1 text-sm font-medium">{payment.student}</p></div></div></Card><Card><h2 className="font-semibold">Bukti pembayaran</h2><p className="mt-2 text-sm text-muted">Belum ada preview bukti pembayaran pada mock data ini.</p></Card></div>; }

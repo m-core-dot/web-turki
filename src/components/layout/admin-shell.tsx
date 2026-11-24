@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 
@@ -13,10 +13,10 @@ export function AdminShell({ children }: AdminShellProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar
+      <Suspense fallback={<div className="fixed inset-y-0 left-0 hidden w-[var(--sidebar-width)] border-r border-border bg-surface lg:block" />}><Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-      />
+            /></Suspense>
 
       {/* Main content area */}
       <div className="flex flex-1 flex-col lg:pl-[var(--sidebar-width)]">
