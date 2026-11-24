@@ -1,0 +1,130 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { ADMIN_NAV_ITEMS, APP_NAME } from "@/lib/constants";
+import {
+  LayoutDashboard,
+  UserPlus,
+  Users,
+  FileText,
+  GraduationCap,
+  Calendar,
+  Send,
+  Wallet,
+  Bell,
+  ScrollText,
+  Settings,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  UserPlus,
+  Users,
+  FileText,
+  GraduationCap,
+  Calendar,
+  Send,
+  Wallet,
+  Bell,
+  ScrollText,
+  Settings,
+};
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-[var(--sidebar-width)] flex-col border-r border-border bg-surface transition-transform duration-200 ease-in-out lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Logo area */}
+        <div className="flex h-[var(--header-height)] items-center justify-between border-b border-border px-5">
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-700 text-xs font-bold text-white">
+              M
+            </div>
+            <div>
+              <span className="text-sm font-bold tracking-tight text-foreground">
+                {APP_NAME}
+              </span>
+              <span className="ml-1.5 text-xs text-muted">Admin</span>
+            </div>
+          </Link>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-muted hover:bg-background-alt hover:text-foreground lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
+          <ul className="space-y-1">
+            {ADMIN_NAV_ITEMS.map((item) => {
+              const Icon = iconMap[item.icon];
+              const isActive =
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary-50 text-primary-700"
+                        : "text-muted hover:bg-background-alt hover:text-foreground"
+                    )}
+                  >
+                    {Icon && (
+                      <Icon
+                        className={cn(
+                          "h-[18px] w-[18px] shrink-0",
+                          isActive ? "text-primary-700" : "text-muted"
+                        )}
+                      />
+                    )}
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-border p-4">
+          <p className="text-xs text-muted-foreground">
+            © 2026 Mumtaza Center
+          </p>
+        </div>
+      </aside>
+    </>
+  );
+}
