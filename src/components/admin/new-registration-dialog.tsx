@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import { submitRegistration } from "@/app/(admin)/admin/registrasi/actions";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -14,7 +15,7 @@ type Field = {
   key: string;
   label: string;
   required?: boolean;
-  type?: "text" | "email" | "date" | "tel" | "number" | "select";
+  type?: "text" | "email" | "date" | "tel" | "number" | "select" | "heading";
   inputMode?: "numeric";
   maxLength?: number;
   placeholder?: string;
@@ -103,6 +104,14 @@ const sections: Section[] = [
   {
     title: "Preferensi Jurusan",
     fields: [
+      {
+        key: "programLevel",
+        label: "Program yang Diikuti",
+        type: "select",
+        placeholder: "Pilih program",
+        colSpan: "full",
+      },
+      { key: "preferenceHeading", label: "Pilihan Jurusan", type: "heading", colSpan: "full" },
       { key: "preferenceOne", label: "Pilihan Jurusan 1" },
       { key: "preferenceTwo", label: "Pilihan Jurusan 2" },
       { key: "preferenceThree", label: "Pilihan Jurusan 3" },
@@ -164,22 +173,29 @@ export function NewRegistrationDialog({
       return false;
     return true;
   };
-  const submit = () => {
-    const savePreview = (dataUrl = "") => {
-      const preview: RegistrationPreview = { id: "REG-2026-001", values, source, sourceOther, submittedAt: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }), proofFile: proofFile ? { name: proofFile.name, size: proofFile.size, type: proofFile.type, dataUrl } : undefined };
-      window.localStorage.setItem(REGISTRATION_PREVIEW_STORAGE_KEY, JSON.stringify(preview));
-    };
-    if (proofFile) { const reader = new FileReader(); reader.onload = () => savePreview(typeof reader.result === "string" ? reader.result : ""); reader.readAsDataURL(proofFile); } else savePreview();
+  const submit = async () => {
     if (!validateStep()) {
       setError("Periksa kembali data yang wajib diisi dan formatnya.");
       return;
     }
+
+    const result = await submitRegistration({ values, source, sourceOther });
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+
+    const savePreview = (dataUrl = "") => {
+      const preview: RegistrationPreview = { id: result.data.registration_number, values, source, sourceOther, submittedAt: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }), proofFile: proofFile ? { name: proofFile.name, size: proofFile.size, type: proofFile.type, dataUrl } : undefined };
+      window.localStorage.setItem(REGISTRATION_PREVIEW_STORAGE_KEY, JSON.stringify(preview));
+    };
+    if (proofFile) { const reader = new FileReader(); reader.onload = () => savePreview(typeof reader.result === "string" ? reader.result : ""); reader.readAsDataURL(proofFile); } else savePreview();
     onClose();
     setStep(0);
     setError("");
     toast({
       title: "Registrasi baru ditambahkan",
-      description: "Data tersimpan sebagai preview UI.",
+      description: "Data berhasil disimpan ke Supabase. Bukti pendaftaran tetap hanya preview lokal.",
       variant: "success",
     });
   };
@@ -256,17 +272,29 @@ export function NewRegistrationDialog({
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
               {currentSection.fields.map((field) =>
-                field.type === "select" ? (
+                field.type === "heading" ? (
+                  <div key={field.key} className="sm:col-span-2 border-b border-border pb-2 pt-2">
+                    <h4 className="text-sm font-semibold text-foreground">{field.label}</h4>
+                  </div>
+                ) : field.type === "select" ? (
                   <div
                     key={field.key}
                     className={field.colSpan === "full" ? "sm:col-span-2" : ""}
                   >
                     <Select
                       label={field.label}
-                      options={[
-                        { value: "LAKI-LAKI", label: "Laki-laki" },
-                        { value: "PEREMPUAN", label: "Perempuan" },
-                      ]}
+                      options={
+                        field.key === "programLevel"
+                          ? [
+                              { value: "S1", label: "S1 (Sarjana)" },
+                              { value: "S2", label: "S2 (Magister)" },
+                              { value: "S3", label: "S3 (Doktor)" },
+                            ]
+                          : [
+                              { value: "LAKI-LAKI", label: "Laki-laki" },
+                              { value: "PEREMPUAN", label: "Perempuan" },
+                            ]
+                      }
                       value={values[field.key] ?? ""}
                       onChange={(value) =>
                         setValues((current) => ({
@@ -274,7 +302,7 @@ export function NewRegistrationDialog({
                           [field.key]: value,
                         }))
                       }
-                      placeholder="Pilih jenis kelamin"
+                      placeholder={field.placeholder ?? "Pilih jenis kelamin"}
                     />
                   </div>
                 ) : (

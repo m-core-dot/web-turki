@@ -25,6 +25,7 @@ export interface SelectProps
   label?: string;
   helperText?: string;
   error?: string;
+  menuPlacement?: "bottom" | "top";
 }
 
 export const Select = forwardRef<HTMLButtonElement, SelectProps>(
@@ -37,6 +38,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       label,
       helperText,
       error,
+      menuPlacement = "bottom",
       id,
       disabled,
       className,
@@ -100,7 +102,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             <ul
               id={`${inputId}-options`}
               role="listbox"
-              className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-dropdown"
+              className={cn(
+                "absolute z-[70] max-h-56 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-dropdown",
+                menuPlacement === "top" ? "bottom-full mb-1" : "mt-1"
+              )}
             >
               {options.map((opt) => (
                 <li
