@@ -100,6 +100,16 @@ const sections: Section[] = [
       { key: "major", label: "Jurusan", required: false },
     ],
   },
+  {
+    title: "Preferensi Jurusan",
+    fields: [
+      { key: "preferenceOne", label: "Pilihan Jurusan 1" },
+      { key: "preferenceTwo", label: "Pilihan Jurusan 2" },
+      { key: "preferenceThree", label: "Pilihan Jurusan 3" },
+      { key: "preferenceFour", label: "Pilihan Jurusan 4", required: false },
+      { key: "preferenceFive", label: "Pilihan Jurusan 5", required: false },
+    ],
+  },
 ];
 
 const sourceOptions = [
