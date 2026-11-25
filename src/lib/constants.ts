@@ -19,6 +19,12 @@ export const ADMIN_ADMISSION_NAV_ITEMS = [
   { label: "Dokumen", href: "/admin/dokumen", icon: "FileText" as const },
 ] as const;
 
+export const ADMIN_UNIVERSITY_NAV_ITEMS = [
+  { label: "Universitas", href: "/admin/universitas", icon: "GraduationCap" as const },
+  { label: "Fakultas", href: "/admin/fakultas", icon: "Building2" as const },
+  { label: "Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
+] as const;
+
 export const STUDENT_NAV_ITEMS = [
   { label: "Dashboard", href: "/portal", icon: "LayoutDashboard" as const },
   { label: "Biodata", href: "/portal/biodata", icon: "User" as const },
