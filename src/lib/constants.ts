@@ -26,6 +26,13 @@ export const ADMIN_UNIVERSITY_NAV_ITEMS = [
   { label: "Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
 ] as const;
 
+export const ADMIN_SYSTEM_NAV_ITEMS = [
+  { label: "Manajemen Pengguna & Role", href: "/admin/pengguna", icon: "UserCog" as const },
+  { label: "Role & Permission", href: "/admin/pengaturan/role-permission", icon: "Shield" as const },
+  { label: "Notifikasi", href: "/admin/notifikasi", icon: "Bell" as const },
+  { label: "Audit Log", href: "/admin/audit-log", icon: "ScrollText" as const },
+] as const;
+
 export const STUDENT_NAV_ITEMS = [
   { label: "Dashboard", href: "/portal", icon: "LayoutDashboard" as const },
   { label: "Biodata", href: "/portal/biodata", icon: "User" as const },

@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ADMIN_ADMISSION_NAV_ITEMS, ADMIN_NAV_ITEMS, ADMIN_UNIVERSITY_NAV_ITEMS, APP_NAME } from "@/lib/constants";
+import { ADMIN_ADMISSION_NAV_ITEMS, ADMIN_NAV_ITEMS, ADMIN_SYSTEM_NAV_ITEMS, ADMIN_UNIVERSITY_NAV_ITEMS, APP_NAME } from "@/lib/constants";
 import {
   LayoutDashboard,
   UserPlus,
@@ -17,6 +17,8 @@ import {
   Bell,
   ScrollText,
   Settings,
+  UserCog,
+  Shield,
   Building2,
   BookOpen,
   ChevronDown,
@@ -37,6 +39,8 @@ const iconMap: Record<string, LucideIcon> = {
   Bell,
   ScrollText,
   Settings,
+  UserCog,
+  Shield,
   Building2,
   BookOpen,
   ChevronDown,
@@ -53,7 +57,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const admissionActive = ADMIN_ADMISSION_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
   const universityActive = ADMIN_UNIVERSITY_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
   const [admissionOpen, setAdmissionOpen] = useState(admissionActive);
+  const systemActive = ADMIN_SYSTEM_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
   const [universityOpen, setUniversityOpen] = useState(universityActive);
+  const [systemOpen, setSystemOpen] = useState(systemActive);
 
   return (
     <>
@@ -102,18 +108,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             })}
             <li className="pt-3"><button type="button" onClick={() => setAdmissionOpen((open) => !open)} className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted" aria-expanded={admissionActive || admissionOpen}><span className="flex items-center gap-2"><ClipboardList className="h-4 w-4" />Admission</span><ChevronDown className={cn("h-4 w-4 transition-transform", (admissionActive || admissionOpen) && "rotate-180")} /></button>{(admissionActive || admissionOpen) && <ul className="mt-1 space-y-1 border-l border-border pl-2">{ADMIN_ADMISSION_NAV_ITEMS.map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}</ul>}</li>
             <li className="pt-3"><button type="button" onClick={() => setUniversityOpen((open) => !open)} className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted" aria-expanded={universityActive || universityOpen}><span className="flex items-center gap-2"><GraduationCap className="h-4 w-4" />University</span><ChevronDown className={cn("h-4 w-4 transition-transform", (universityActive || universityOpen) && "rotate-180")} /></button>{(universityActive || universityOpen) && <ul className="mt-1 space-y-1 border-l border-border pl-2">{ADMIN_UNIVERSITY_NAV_ITEMS.map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}</ul>}</li>
-            {ADMIN_NAV_ITEMS.filter((item) => !["/admin/intake"].includes(item.href)).slice(1).map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={() => { setAdmissionOpen(false); setUniversityOpen(false); onClose(); }} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}
-            <li><Link href="/admin/intake" onClick={() => { setAdmissionOpen(false); setUniversityOpen(false); onClose(); }} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", pathname.startsWith("/admin/intake") ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}><Calendar className="h-[18px] w-[18px] shrink-0" />Intake</Link></li>
+            <li className="pt-3"><button type="button" onClick={() => setSystemOpen((open) => !open)} className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted" aria-expanded={systemActive || systemOpen}><span className="flex items-center gap-2"><Shield className="h-4 w-4" />Sistem</span><ChevronDown className={cn("h-4 w-4 transition-transform", (systemActive || systemOpen) && "rotate-180")} /></button>{(systemActive || systemOpen) && <ul className="mt-1 space-y-1 border-l border-border pl-2">{ADMIN_SYSTEM_NAV_ITEMS.map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}</ul>}</li>
+            {ADMIN_NAV_ITEMS.filter((item) => !["/admin/intake", "/admin/notifikasi", "/admin/audit-log"].includes(item.href)).slice(1).map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={() => { setAdmissionOpen(false); setUniversityOpen(false); setSystemOpen(false); onClose(); }} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}
+            <li><Link href="/admin/intake" onClick={() => { setAdmissionOpen(false); setUniversityOpen(false); setSystemOpen(false); onClose(); }} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", pathname.startsWith("/admin/intake") ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}><Calendar className="h-[18px] w-[18px] shrink-0" />Intake</Link></li>
           </ul>
         </nav>
 
         {/* Footer */}
         <div className="border-t border-border p-4">
           <p className="text-xs text-muted-foreground">
-            © 2026 Mumtaza Center
+            Â© 2026 Mumtaza Center
           </p>
         </div>
       </aside>
     </>
   );
 }
+
+
+
