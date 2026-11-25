@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useId, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -31,6 +31,8 @@ export function Dialog({
   size = "md",
 }: DialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -52,12 +54,14 @@ export function Dialog({
         ref={overlayRef}
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
       {/* Panel */}
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="dialog-title"
+        aria-labelledby={titleId}
+        aria-describedby={description ? descriptionId : undefined}
         className={cn(
           "relative w-full rounded-2xl border border-border bg-surface shadow-modal",
           sizeStyles[size]
@@ -67,13 +71,13 @@ export function Dialog({
         <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
             <h2
-              id="dialog-title"
+              id={titleId}
               className="text-base font-semibold text-foreground"
             >
               {title}
             </h2>
             {description && (
-              <p className="mt-0.5 text-sm text-muted">{description}</p>
+              <p id={descriptionId} className="mt-0.5 text-sm text-muted">{description}</p>
             )}
           </div>
           <button

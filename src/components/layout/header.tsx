@@ -14,6 +14,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Left side */}
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={onMenuClick}
             className="rounded-lg p-2 text-muted hover:bg-background-alt hover:text-foreground lg:hidden"
             aria-label="Toggle menu"
@@ -37,13 +38,13 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Right side */}
         <div className="flex items-center gap-2">
           {/* Notifications */}
-          <button className="relative rounded-lg p-2 text-muted hover:bg-background-alt hover:text-foreground">
+          <button type="button" aria-label="Buka notifikasi" className="relative rounded-lg p-2 text-muted hover:bg-background-alt hover:text-foreground">
             <Bell className="h-5 w-5" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger-500" />
+            <span aria-hidden="true" className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger-500" />
           </button>
 
           {/* User menu */}
-          <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-background-alt">
+          <button type="button" aria-label="Buka menu akun Admin MTAS" className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-background-alt">
             <Avatar name="Admin MTAS" size="sm" />
             <div className="hidden text-left md:block">
               <p className="text-sm font-medium text-foreground">Admin MTAS</p>

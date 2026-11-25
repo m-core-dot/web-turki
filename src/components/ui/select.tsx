@@ -83,6 +83,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             )}
             aria-haspopup="listbox"
             aria-expanded={open}
+            aria-controls={`${inputId}-options`}
           >
             <span className={selected ? "text-foreground" : "text-muted-foreground"}>
               {selected ? selected.label : placeholder}
@@ -97,6 +98,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
 
           {open && (
             <ul
+              id={`${inputId}-options`}
               role="listbox"
               className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-dropdown"
             >
@@ -105,6 +107,15 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                   key={opt.value}
                   role="option"
                   aria-selected={opt.value === value}
+                  aria-disabled={opt.disabled || undefined}
+                  tabIndex={opt.disabled ? -1 : 0}
+                  onKeyDown={(event) => {
+                    if (!opt.disabled && (event.key === "Enter" || event.key === " ")) {
+                      event.preventDefault();
+                      onChange?.(opt.value);
+                      setOpen(false);
+                    }
+                  }}
                   onClick={() => {
                     if (!opt.disabled) {
                       onChange?.(opt.value);
