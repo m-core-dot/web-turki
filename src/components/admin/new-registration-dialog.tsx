@@ -13,7 +13,7 @@ type Section = { title: string; fields: Field[] };
 
 const sections: Section[] = [
   { title: "Data Pribadi", fields: [
-    { key: "fullName", label: "Nama Lengkap (Sesuai Paspor)" }, { key: "birthPlace", label: "Tempat Lahir (Sesuai Paspor)" }, { key: "birthDate", label: "Tanggal Lahir", type: "date" }, { key: "gender", label: "Jenis Kelamin" }, { key: "passport", label: "Nomor Paspor", required: false }, { key: "nik", label: "NIK KTP", inputMode: "numeric", maxLength: 16, placeholder: "16 angka" }, { key: "telegram", label: "Username Telegram", required: false }, { key: "email", label: "Alamat Email Aktif", type: "email", placeholder: "nama@email.com" }, { key: "phone", label: "Nomor Telepon (WhatsApp)", type: "tel", inputMode: "numeric", placeholder: "08xxxxxxxxxx" },
+    { key: "fullName", label: "Nama Lengkap (Sesuai Paspor)" }, { key: "birthPlace", label: "Tempat Lahir (Sesuai Paspor)" }, { key: "birthDate", label: "Tanggal Lahir", type: "date" }, { key: "passport", label: "Nomor Paspor", required: false }, { key: "nik", label: "NIK KTP", inputMode: "numeric", maxLength: 16, placeholder: "16 angka" }, { key: "telegram", label: "Username Telegram", required: false }, { key: "email", label: "Alamat Email Aktif", type: "email", placeholder: "nama@email.com" }, { key: "phone", label: "Nomor Telepon (WhatsApp)", type: "tel", inputMode: "numeric", placeholder: "08xxxxxxxxxx" },
   ] },
   { title: "Data Keluarga & Kontak", fields: [
     { key: "fatherName", label: "Nama Ayah" }, { key: "fatherPhone", label: "Nomor Telepon Ayah", required: false, type: "tel", inputMode: "numeric" }, { key: "motherName", label: "Nama Ibu" }, { key: "motherPhone", label: "Nomor Telepon Ibu", type: "tel", inputMode: "numeric" },
