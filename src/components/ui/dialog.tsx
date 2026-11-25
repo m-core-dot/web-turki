@@ -12,13 +12,14 @@ interface DialogProps {
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 const sizeStyles = {
   sm: "max-w-sm",
   md: "max-w-lg",
   lg: "max-w-2xl min-h-[min(720px,calc(100vh-2rem))]",
+  xl: "max-w-4xl min-h-[min(820px,calc(100vh-2rem))]", 
 };
 
 export function Dialog({

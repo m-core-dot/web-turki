@@ -172,7 +172,7 @@ export function NewRegistrationDialog({
       onClose={onClose}
       title="Registrasi Baru"
       description="Lengkapi data peserta melalui beberapa tahap."
-      size="lg"
+      size="xl"
       footer={
         <>
           <Button variant="outline" onClick={onClose}>
@@ -209,7 +209,7 @@ export function NewRegistrationDialog({
         </>
       }
     >
-      <div className="mb-6 flex items-center justify-between gap-2 overflow-x-auto pb-1">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between sm:gap-2 sm:overflow-x-visible pb-1">
         {[...sections.map((section) => section.title), "Sumber Informasi"].map(
           (title, index) => (
             <div
