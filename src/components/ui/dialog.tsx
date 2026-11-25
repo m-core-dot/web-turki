@@ -18,7 +18,7 @@ interface DialogProps {
 const sizeStyles = {
   sm: "max-w-sm",
   md: "max-w-lg",
-  lg: "max-w-2xl",
+  lg: "max-w-2xl min-h-[min(720px,calc(100vh-2rem))]",
 };
 
 export function Dialog({
@@ -90,7 +90,7 @@ export function Dialog({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5">{children}</div>
+        <div className="min-h-0 px-6 py-5">{children}</div>
 
         {/* Footer */}
         {footer && (
