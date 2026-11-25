@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ADMIN_ADMISSION_NAV_ITEMS, ADMIN_NAV_ITEMS, APP_NAME } from "@/lib/constants";
 import {
@@ -49,6 +50,8 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const admissionActive = ADMIN_ADMISSION_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
+  const [admissionOpen, setAdmissionOpen] = useState(admissionActive);
 
   return (
     <>
@@ -95,7 +98,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               const Icon = iconMap[item.icon];
               return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", pathname === "/admin" ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>;
             })}
-            <li className="pt-3"><button type="button" className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted" aria-expanded="true"><span className="flex items-center gap-2"><ClipboardList className="h-4 w-4" />Admission</span><ChevronDown className="h-4 w-4" /></button><ul className="mt-1 space-y-1 border-l border-border pl-2">{ADMIN_ADMISSION_NAV_ITEMS.map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}</ul></li>
+            <li className="pt-3"><button type="button" onClick={() => setAdmissionOpen((open) => !open)} className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted" aria-expanded={admissionOpen}><span className="flex items-center gap-2"><ClipboardList className="h-4 w-4" />Admission</span><ChevronDown className={cn("h-4 w-4 transition-transform", admissionOpen && "rotate-180")} /></button>{admissionOpen && <ul className="mt-1 space-y-1 border-l border-border pl-2">{ADMIN_ADMISSION_NAV_ITEMS.map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}</ul>}</li>
             {ADMIN_NAV_ITEMS.slice(1).map((item) => { const Icon = iconMap[item.icon]; const isActive = pathname.startsWith(item.href); return <li key={item.href}><Link href={item.href} onClick={onClose} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors", isActive ? "bg-primary-50 text-primary-700" : "text-muted hover:bg-background-alt hover:text-foreground")}>{Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}{item.label}</Link></li>; })}
           </ul>
         </nav>
