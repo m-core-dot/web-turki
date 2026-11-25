@@ -6,4 +6,5 @@ export type RegistrationPreview = {
   source: string;
   sourceOther: string;
   submittedAt: string;
+  proofFile?: { name: string; size: number; type: string; dataUrl: string };
 };

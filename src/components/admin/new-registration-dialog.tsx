@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { FileUpload } from "@/components/ui/file-upload";
 import { toast } from "@/components/ui/toast";
 import { REGISTRATION_PREVIEW_STORAGE_KEY, type RegistrationPreview } from "@/lib/registration-preview";
 
@@ -123,6 +124,7 @@ export function NewRegistrationDialog({
   const [values, setValues] = useState<Record<string, string>>({});
   const [source, setSource] = useState("");
   const [sourceOther, setSourceOther] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
   const currentSection = sections[step];
@@ -153,8 +155,11 @@ export function NewRegistrationDialog({
     return true;
   };
   const submit = () => {
-    const preview: RegistrationPreview = { id: "REG-2026-001", values, source, sourceOther, submittedAt: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) };
-    window.localStorage.setItem(REGISTRATION_PREVIEW_STORAGE_KEY, JSON.stringify(preview));
+    const savePreview = (dataUrl = "") => {
+      const preview: RegistrationPreview = { id: "REG-2026-001", values, source, sourceOther, submittedAt: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }), proofFile: proofFile ? { name: proofFile.name, size: proofFile.size, type: proofFile.type, dataUrl } : undefined };
+      window.localStorage.setItem(REGISTRATION_PREVIEW_STORAGE_KEY, JSON.stringify(preview));
+    };
+    if (proofFile) { const reader = new FileReader(); reader.onload = () => savePreview(typeof reader.result === "string" ? reader.result : ""); reader.readAsDataURL(proofFile); } else savePreview();
     if (!validateStep()) {
       setError("Periksa kembali data yang wajib diisi dan formatnya.");
       return;
@@ -302,6 +307,7 @@ export function NewRegistrationDialog({
             <h3 className="border-b border-border pb-2 text-base font-semibold text-foreground">
               Sumber Informasi
             </h3>
+            <FileUpload label="Bukti pendaftaran" onChange={setProofFile} helperText="PDF, JPG, atau PNG. Maksimal 5MB." />
             <Select
               label="Mengetahui MTAS dari"
               options={sourceOptions.map((value) => ({ value, label: value }))}
