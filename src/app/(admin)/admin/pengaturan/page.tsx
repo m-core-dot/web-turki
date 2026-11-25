@@ -1,9 +1,8 @@
-import { Settings, Shield, Bell, UserCog } from "lucide-react";
+import { Settings, Shield, Bell } from "lucide-react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 
 const settings = [
-  { title: "Profil Organisasi", description: "Nama, logo, dan informasi Mumtaza Center.", icon: UserCog },
   { title: "Role & Permission", description: "Kelola akses dan hak pengguna admin.", icon: Shield },
   { title: "Notifikasi", description: "Atur template dan preferensi notifikasi.", icon: Bell },
   { title: "Konfigurasi Sistem", description: "Pengaturan umum aplikasi MTAS.", icon: Settings },
