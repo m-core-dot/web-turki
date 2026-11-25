@@ -7,6 +7,7 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: "LayoutDashboard" as const },
   { label: "Intake", href: "/admin/intake", icon: "Calendar" as const },
   { label: "Aplikasi", href: "/admin/aplikasi", icon: "Send" as const },
+  { label: "Alumni", href: "/admin/alumni", icon: "Users" as const },
   { label: "Keuangan", href: "/admin/keuangan", icon: "Wallet" as const },
   { label: "Notifikasi", href: "/admin/notifikasi", icon: "Bell" as const },
   { label: "Audit Log", href: "/admin/audit-log", icon: "ScrollText" as const },
