@@ -16,7 +16,6 @@ import {
   Wallet,
   Bell,
   ScrollText,
-  Settings,
   UserCog,
   Shield,
   Building2,
@@ -38,7 +37,6 @@ const iconMap: Record<string, LucideIcon> = {
   Wallet,
   Bell,
   ScrollText,
-  Settings,
   UserCog,
   Shield,
   Building2,
@@ -124,6 +122,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     </>
   );
 }
+
 
 
 
