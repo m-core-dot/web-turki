@@ -227,12 +227,12 @@ export function NewRegistrationDialog({
         </>
       }
     >
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between sm:gap-2 sm:overflow-x-visible pb-1">
+      <div className="mb-6 grid grid-cols-2 gap-3 pb-1 md:grid-cols-3">
         {[...sections.map((section) => section.title), "Sumber Informasi"].map(
           (title, index) => (
             <div
               key={title}
-              className="flex min-w-max items-center gap-2 text-xs"
+              className="flex min-w-0 items-center gap-2 text-xs"
             >
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full border-2 font-semibold ${index < step ? "border-primary-700 bg-primary-700 text-white" : index === step ? "border-primary-700 bg-primary-50 text-primary-700" : "border-border text-muted"}`}
@@ -240,11 +240,7 @@ export function NewRegistrationDialog({
                 {index < step ? <Check className="h-3.5 w-3.5" /> : index + 1}
               </span>
               <span
-                className={
-                  index === step
-                    ? "font-semibold text-primary-700"
-                    : "text-muted"
-                }
+                className={`truncate ${index === step ? "font-semibold text-primary-700" : "text-muted"}`}
               >
                 {title}
               </span>
