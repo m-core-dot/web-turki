@@ -19,6 +19,13 @@ interface AdminTablePageProps<T> {
   }>;
   keyExtractor: (item: T) => string;
   searchPlaceholder?: string;
+  searchKeys?: Array<keyof T>;
+  selectable?: boolean;
+  bulkActions?: Array<{ value: string; label: string }>;
+  onBulkAction?: (action: string, items: T[]) => void;
+  exportable?: boolean;
+  sortable?: boolean;
+  exportFilename?: string;
   children?: ReactNode;
 }
 
@@ -31,6 +38,13 @@ export function AdminTablePage<T>({
   columns,
   keyExtractor,
   searchPlaceholder,
+  searchKeys,
+  selectable,
+  bulkActions,
+  onBulkAction,
+  exportable,
+  sortable,
+  exportFilename,
   children,
 }: AdminTablePageProps<T>) {
   return (
@@ -44,6 +58,13 @@ export function AdminTablePage<T>({
           columns={columns}
           keyExtractor={keyExtractor}
           searchPlaceholder={searchPlaceholder}
+          searchKeys={searchKeys}
+          selectable={selectable}
+          bulkActions={bulkActions}
+          onBulkAction={onBulkAction}
+          exportable={exportable}
+          sortable={sortable}
+          exportFilename={exportFilename}
         />
       </Card>
     </div>
