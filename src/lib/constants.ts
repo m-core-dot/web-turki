@@ -5,9 +5,6 @@ export const APP_DESCRIPTION =
 
 export const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: "LayoutDashboard" as const },
-  { label: "Registrasi", href: "/admin/registrasi", icon: "UserPlus" as const },
-  { label: "Peserta", href: "/admin/peserta", icon: "Users" as const },
-  { label: "Dokumen", href: "/admin/dokumen", icon: "FileText" as const },
   { label: "Universitas", href: "/admin/universitas", icon: "GraduationCap" as const },
   { label: "Fakultas", href: "/admin/fakultas", icon: "Building2" as const },
   { label: "Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
@@ -17,6 +14,12 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Notifikasi", href: "/admin/notifikasi", icon: "Bell" as const },
   { label: "Audit Log", href: "/admin/audit-log", icon: "ScrollText" as const },
   { label: "Pengaturan", href: "/admin/pengaturan", icon: "Settings" as const },
+] as const;
+
+export const ADMIN_ADMISSION_NAV_ITEMS = [
+  { label: "Registrasi", href: "/admin/registrasi", icon: "UserPlus" as const },
+  { label: "Peserta", href: "/admin/peserta", icon: "Users" as const },
+  { label: "Dokumen", href: "/admin/dokumen", icon: "FileText" as const },
 ] as const;
 
 export const STUDENT_NAV_ITEMS = [
