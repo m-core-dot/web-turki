@@ -7,6 +7,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
+import { REGISTRATION_PREVIEW_STORAGE_KEY, type RegistrationPreview } from "@/lib/registration-preview";
 
 type Field = {
   key: string;
@@ -152,6 +153,8 @@ export function NewRegistrationDialog({
     return true;
   };
   const submit = () => {
+    const preview: RegistrationPreview = { id: "REG-2026-001", values, source, sourceOther, submittedAt: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) };
+    window.localStorage.setItem(REGISTRATION_PREVIEW_STORAGE_KEY, JSON.stringify(preview));
     if (!validateStep()) {
       setError("Periksa kembali data yang wajib diisi dan formatnya.");
       return;
