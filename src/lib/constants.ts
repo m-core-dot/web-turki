@@ -5,9 +5,6 @@ export const APP_DESCRIPTION =
 
 export const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: "LayoutDashboard" as const },
-  { label: "Universitas", href: "/admin/universitas", icon: "GraduationCap" as const },
-  { label: "Fakultas", href: "/admin/fakultas", icon: "Building2" as const },
-  { label: "Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
   { label: "Intake", href: "/admin/intake", icon: "Calendar" as const },
   { label: "Aplikasi", href: "/admin/aplikasi", icon: "Send" as const },
   { label: "Keuangan", href: "/admin/keuangan", icon: "Wallet" as const },
