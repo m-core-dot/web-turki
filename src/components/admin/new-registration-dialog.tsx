@@ -234,7 +234,7 @@ export function NewRegistrationDialog({
           ),
         )}
       </div>
-      <div className="max-h-[55vh] overflow-y-auto pr-1">
+      <div className="pr-1">
         {!isSourceStep && currentSection ? (
           <section className="space-y-4">
             <h3 className="border-b border-border pb-2 text-base font-semibold text-foreground">

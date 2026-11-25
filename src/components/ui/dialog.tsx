@@ -63,7 +63,7 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         className={cn(
-          "relative w-full rounded-2xl border border-border bg-surface shadow-modal",
+          "relative flex w-full flex-col rounded-2xl border border-border bg-surface shadow-modal",
           sizeStyles[size]
         )}
       >
@@ -90,7 +90,7 @@ export function Dialog({
         </div>
 
         {/* Body */}
-        <div className="min-h-0 px-6 py-5">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
 
         {/* Footer */}
         {footer && (
