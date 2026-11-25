@@ -1,19 +1,18 @@
-"use client";
-
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+﻿"use client";
+import { useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
+import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
-import { AdminTablePage } from "@/components/shared/admin-table-page";
-import { mockUniversities } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/dialog";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import { MasterCrudDialog } from "@/components/shared/master-crud-dialog";
+import { toast } from "@/components/ui/toast";
+import { mockUniversities, type MockUniversity } from "@/lib/mock-data";
 
 export default function UniversitasPage() {
-  return <AdminTablePage title="Universitas" description="Kelola master universitas mitra di Turki." action={<Button><Plus className="h-4 w-4" />Tambah Universitas</Button>} data={mockUniversities} keyExtractor={(item) => item.id} filters={[{ key: "status", label: "Status", options: [{ value: "active", label: "Aktif" }, { value: "inactive", label: "Nonaktif" }] }, { key: "city", label: "Kota", options: [{ value: "Istanbul", label: "Istanbul" }, { value: "Ankara", label: "Ankara" }, { value: "Sakarya", label: "Sakarya" }, { value: "Bursa", label: "Bursa" }] }]} searchPlaceholder="Cari universitas atau kota..." columns={[
-    { key: "name", label: "Universitas", render: (item) => <div><p className="font-medium text-foreground">{item.name}</p><p className="text-xs text-muted">{item.id}</p></div> },
-    { key: "city", label: "Kota", render: (item) => <span>{item.city}</span> },
-    { key: "faculties", label: "Fakultas", render: (item) => <span>{item.faculties}</span> },
-    { key: "intakes", label: "Intake", render: (item) => <span>{item.intakes}</span> },
-    { key: "status", label: "Status", render: (item) => <Badge variant={item.status === "active" ? "success" : "default"} dot>{item.status === "active" ? "Aktif" : "Nonaktif"}</Badge> },
-  ]} />;
+  const [items, setItems] = useState(mockUniversities); const [editing, setEditing] = useState<MockUniversity | null>(null); const [open, setOpen] = useState(false); const [deleting, setDeleting] = useState<MockUniversity | null>(null);
+  const save = (values: Record<string, string>) => { const item: MockUniversity = { id: editing?.id ?? `UNI-${String(items.length + 1).padStart(3, "0")}`, name: values.name, city: values.city, faculties: editing?.faculties ?? 0, intakes: editing?.intakes ?? 0, status: values.status as MockUniversity["status"] }; setItems((current) => editing ? current.map((x) => x.id === editing.id ? item : x) : [...current, item]); setOpen(false); toast({ title: editing ? "Universitas diperbarui" : "Universitas ditambahkan", variant: "success" }); };
+  return <div className="space-y-6"><PageHeader title="Universitas" description="Kelola master universitas mitra di Turki." action={<Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4" />Tambah Universitas</Button>} /><DataTable data={items} keyExtractor={(x) => x.id} searchPlaceholder="Cari universitas atau kota..." filters={[{ key: "status", label: "Status", options: [{ value: "active", label: "Aktif" }, { value: "inactive", label: "Nonaktif" }] }, { key: "city", label: "Kota", options: [...new Set(items.map((x) => x.city))].map((x) => ({ value: x, label: x })) }]} columns={[{ key: "name", label: "Universitas", render: (x) => <div><p className="font-medium">{x.name}</p><p className="text-xs text-muted">{x.id}</p></div> }, { key: "city", label: "Kota", render: (x) => x.city }, { key: "faculties", label: "Fakultas", render: (x) => x.faculties }, { key: "intakes", label: "Intake", render: (x) => x.intakes }, { key: "status", label: "Status", render: (x) => <Badge variant={x.status === "active" ? "success" : "default"} dot>{x.status === "active" ? "Aktif" : "Nonaktif"}</Badge> }, { key: "actions", label: "", className: "w-12", render: (x) => <DropdownMenu items={[{ label: "Edit universitas", icon: <Pencil className="h-4 w-4" />, onClick: () => { setEditing(x); setOpen(true); } }, { label: "Hapus universitas", icon: <Trash2 className="h-4 w-4" />, variant: "danger", separator: true, onClick: () => setDeleting(x) }]} /> }]} /><MasterCrudDialog open={open} onClose={() => setOpen(false)} title={editing ? "Edit universitas" : "Tambah universitas"} description="Perubahan hanya berlaku selama preview UI." initialValues={editing ? { name: editing.name, city: editing.city, status: editing.status } : { status: "active" }} fields={[{ name: "name", label: "Nama universitas", placeholder: "Contoh: Istanbul University" }, { name: "city", label: "Kota", placeholder: "Contoh: Istanbul" }, { name: "status", label: "Status", type: "select", options: [{ value: "active", label: "Aktif" }, { value: "inactive", label: "Nonaktif" }] }]} onSubmit={save} /><ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={() => { setItems((current) => current.filter((x) => x.id !== deleting?.id)); setDeleting(null); toast({ title: "Universitas dihapus", variant: "success" }); }} title="Hapus universitas?" description={`Universitas ${deleting?.name ?? "ini"} akan dihapus dari preview.`} confirmLabel="Hapus Universitas" /></div>;
 }
-
-

@@ -1,22 +1,14 @@
 "use client";
-
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
+import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
-import { AdminTablePage } from "@/components/shared/admin-table-page";
-import { mockIntakes } from "@/lib/mock-data";
-
-const intakeStatus: Record<string, { label: string; variant: "default" | "success" | "warning" | "info" }> = { upcoming: { label: "Akan Dibuka", variant: "info" }, open: { label: "Dibuka", variant: "success" }, closed: { label: "Ditutup", variant: "default" }, draft: { label: "Draft", variant: "warning" } };
-export default function IntakePage() {
-  return <AdminTablePage title="Intake" description="Atur periode pendaftaran setiap universitas." action={<Button><Plus className="h-4 w-4" />Tambah Intake</Button>} data={mockIntakes} keyExtractor={(item) => item.id} filters={[{ key: "status", label: "Status", options: [{ value: "open", label: "Dibuka" }, { value: "upcoming", label: "Akan Dibuka" }, { value: "closed", label: "Ditutup" }] }, { key: "university", label: "Universitas", options: [{ value: "Istanbul University", label: "Istanbul University" }, { value: "Ankara University", label: "Ankara University" }, { value: "Sakarya University", label: "Sakarya University" }] }]} searchPlaceholder="Cari universitas atau periode..." columns={[
-    { key: "university", label: "Universitas", render: (item) => <div><p className="font-medium text-foreground">{item.university}</p><p className="text-xs text-muted">{item.id}</p></div> },
-    { key: "name", label: "Periode", render: (item) => <span>{item.name}</span> },
-    { key: "open", label: "Mulai", render: (item) => <span className="text-muted">{item.openDate}</span> },
-    { key: "close", label: "Berakhir", render: (item) => <span className="text-muted">{item.closeDate}</span> },
-    { key: "majors", label: "Jurusan", render: (item) => <span>{item.majors}</span> },
-    { key: "status", label: "Status", render: (item) => <Badge variant={intakeStatus[item.status].variant} dot>{intakeStatus[item.status].label}</Badge> },
-  ]} />;
-}
-
-
-
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/dialog";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import { MasterCrudDialog } from "@/components/shared/master-crud-dialog";
+import { toast } from "@/components/ui/toast";
+import { mockIntakes, mockUniversities, type MockIntake } from "@/lib/mock-data";
+const statuses: Record<string, { label: string; variant: "default" | "success" | "warning" | "info" }>={upcoming:{label:"Akan Dibuka",variant:"info"},open:{label:"Dibuka",variant:"success"},closed:{label:"Ditutup",variant:"default"},draft:{label:"Draft",variant:"warning"},cancelled:{label:"Dibatalkan",variant:"default"}};
+export default function IntakePage(){const [items,setItems]=useState(mockIntakes),[editing,setEditing]=useState<MockIntake|null>(null),[open,setOpen]=useState(false),[deleting,setDeleting]=useState<MockIntake|null>(null);const save=(v:Record<string,string>)=>{const item:MockIntake={id:editing?.id??`INT-${String(items.length+1).padStart(3,"0")}`,university:v.university,name:v.name,openDate:v.openDate,closeDate:v.closeDate,majors:Number(v.majors)||0,status:v.status as MockIntake["status"]};setItems(c=>editing?c.map(x=>x.id===editing.id?item:x):[...c,item]);setOpen(false);toast({title:editing?"Intake diperbarui":"Intake ditambahkan",variant:"success"})};return <div className="space-y-6"><PageHeader title="Intake" description="Atur periode pendaftaran setiap universitas." action={<Button onClick={()=>{setEditing(null);setOpen(true)}}><Plus className="h-4 w-4"/>Tambah Intake</Button>}/><DataTable data={items} keyExtractor={x=>x.id} searchPlaceholder="Cari universitas atau periode..." filters={[{key:"status",label:"Status",options:Object.entries(statuses).map(([value,x])=>({value,label:x.label}))},{key:"university",label:"Universitas",options:mockUniversities.map(x=>({value:x.name,label:x.name}))}]} columns={[{key:"university",label:"Universitas",render:x=><div><p className="font-medium">{x.university}</p><p className="text-xs text-muted">{x.id}</p></div>},{key:"name",label:"Periode",render:x=>x.name},{key:"open",label:"Mulai",render:x=><span className="text-muted">{x.openDate}</span>},{key:"close",label:"Berakhir",render:x=><span className="text-muted">{x.closeDate}</span>},{key:"majors",label:"Jurusan",render:x=>x.majors},{key:"status",label:"Status",render:x=><Badge variant={statuses[x.status].variant} dot>{statuses[x.status].label}</Badge>},{key:"actions",label:"",className:"w-12",render:x=><DropdownMenu items={[{label:"Edit intake",icon:<Pencil className="h-4 w-4"/>,onClick:()=>{setEditing(x);setOpen(true)}},{label:"Hapus intake",icon:<Trash2 className="h-4 w-4"/>,variant:"danger",separator:true,onClick:()=>setDeleting(x)}]}/>} ]}/><MasterCrudDialog open={open} onClose={()=>setOpen(false)} title={editing?"Edit intake":"Tambah intake"} description="Perubahan hanya berlaku selama preview UI." initialValues={editing?{university:editing.university,name:editing.name,openDate:editing.openDate,closeDate:editing.closeDate,majors:String(editing.majors),status:editing.status}:{status:"draft",majors:"0"}} fields={[{name:"university",label:"Universitas",type:"select",options:mockUniversities.map(x=>({value:x.name,label:x.name}))},{name:"name",label:"Nama periode",placeholder:"Fall 2027"},{name:"openDate",label:"Tanggal mulai",type:"date"},{name:"closeDate",label:"Tanggal berakhir",type:"date"},{name:"majors",label:"Jumlah jurusan",type:"text"},{name:"status",label:"Status",type:"select",options:Object.entries(statuses).map(([value,x])=>({value,label:x.label}))}]} onSubmit={save}/><ConfirmDialog open={!!deleting} onClose={()=>setDeleting(null)} onConfirm={()=>{setItems(c=>c.filter(x=>x.id!==deleting?.id));setDeleting(null);toast({title:"Intake dihapus",variant:"success"})}} title="Hapus intake?" description={`Intake ${deleting?.name??"ini"} akan dihapus dari preview.`} confirmLabel="Hapus Intake"/></div>}
