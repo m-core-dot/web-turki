@@ -1,6 +1,26 @@
 "use server";
 
 import { getSupabaseAdminClient, getSupabaseServerClient } from "@/lib/supabase/server";
+import { staffInputSchema } from "@/lib/staff";
+
+export async function updateCurrentStaffProfile(input: unknown) {
+  const parsed = staffInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, message: "Data profil tidak valid." };
+
+  const sessionClient = await getSupabaseServerClient();
+  const { data: { user } } = await sessionClient.auth.getUser();
+  if (!user) return { ok: false as const, message: "Sesi login tidak valid." };
+
+  const admin = getSupabaseAdminClient();
+  const { error } = await admin.from("staff").update({
+    name: parsed.data.name,
+    gender: parsed.data.gender,
+    phone: parsed.data.phone,
+    address: parsed.data.address,
+  }).eq("auth_user_id", user.id);
+  if (error) return { ok: false as const, message: "Profil gagal diperbarui." };
+  return { ok: true as const };
+}
 
 export async function getCurrentStaffProfile() {
   const sessionClient = await getSupabaseServerClient();

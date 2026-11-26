@@ -9,7 +9,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { getCurrentStaffProfile } from "./header-actions";
+import { getCurrentStaffProfile, updateCurrentStaffProfile } from "./header-actions";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -27,6 +27,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [profileAddress, setProfileAddress] = useState("");
   const [profileJobRole, setProfileJobRole] = useState("");
   const [profileStatus, setProfileStatus] = useState("active");
+  const [profileSaving, setProfileSaving] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,16 +127,23 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
     </header>
-    <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit profile" description="Data profil yang tersimpan pada halaman Staff." footer={<><Button variant="outline" onClick={() => setProfileOpen(false)}>Tutup</Button></>}>
+    <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit profile" description="Perbarui data pribadi Anda. Departemen, role, dan status dikelola melalui halaman Staff." footer={<><Button variant="outline" onClick={() => setProfileOpen(false)}>Batal</Button><Button isLoading={profileSaving} onClick={async () => {
+      setProfileSaving(true);
+      const result = await updateCurrentStaffProfile({ name: profileName, email: profileEmail, gender: profileGender, phone: profilePhone, address: profileAddress, department: profileRole, role: profileJobRole, status: profileStatus });
+      setProfileSaving(false);
+      if (!result.ok) { toast({ title: "Profil gagal diperbarui", description: result.message, variant: "warning" }); return; }
+      setProfileOpen(false);
+      toast({ title: "Profil diperbarui", description: "Data pribadi berhasil disimpan.", variant: "success" });
+    }}>Simpan</Button></>}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Nama lengkap" value={profileName} readOnly />
+        <Input label="Nama lengkap" value={profileName} onChange={(event) => setProfileName(event.target.value)} />
         <Input label="Email login" type="email" value={profileEmail} readOnly />
-        <Input label="Jenis kelamin" value={profileGender} readOnly />
-        <Input label="Nomor telepon" value={profilePhone} readOnly />
+        <Input label="Jenis kelamin" value={profileGender} onChange={(event) => setProfileGender(event.target.value)} />
+        <Input label="Nomor telepon" value={profilePhone} onChange={(event) => setProfilePhone(event.target.value)} />
         <Input label="Departemen" value={profileRole} readOnly />
         <Input label="Role" value={profileJobRole} readOnly />
         <Input label="Status" value={profileStatus === "active" ? "Aktif" : "Nonaktif"} readOnly />
-        <Input label="Alamat" value={profileAddress} readOnly />
+        <Input label="Alamat" value={profileAddress} onChange={(event) => setProfileAddress(event.target.value)} />
       </div>
     </Dialog>
     </>
