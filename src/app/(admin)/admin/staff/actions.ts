@@ -26,13 +26,10 @@ export async function saveStaff(input: unknown, id?: string) {
 
   if (id) {
     const admin = getSupabaseAdminClient();
-    const [{ data: currentStaff }, { data: currentUser }] = await Promise.all([
-      admin.from("staff").select("role").eq("id", id).single(),
-      (async () => {
-        const { data } = await (await getSupabaseServerClient()).auth.getUser();
-        return data.user;
-      })(),
-    ]);
+    const { data: currentStaff } = await admin.from("staff").select("role").eq("id", id).single();
+    const client = await getSupabaseServerClient();
+    const { data: authData } = await client.auth.getUser();
+    const currentUser = authData.user;
     if (currentStaff?.role === "Super Admin" && currentUser) {
       const { data: actor } = await admin.from("staff").select("role").eq("auth_user_id", currentUser.id).single();
       if (actor?.role === "Super Admin") return { ok: false as const, message: "Super Admin tidak dapat mengedit akun Super Admin lainnya." };
