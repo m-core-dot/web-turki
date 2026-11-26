@@ -62,9 +62,11 @@ export async function updateParticipantBiodata(input: EditableBiodata) {
   if (error) return { error: error.message };
   const fieldLabels: Record<string, string> = { full_name: "Nama lengkap", email: "Email", nik: "NIK", passport_number: "Nomor paspor", birth_place: "Tempat lahir", birth_date: "Tanggal lahir", gender: "Jenis kelamin", whatsapp_phone: "Nomor WhatsApp", telegram_username: "Telegram", father_name: "Nama ayah", father_phone: "Telepon ayah", mother_name: "Nama ibu", mother_phone: "Telepon ibu", address: "Alamat lengkap", rt_rw: "RT/RW", village: "Kelurahan/Desa", district: "Kecamatan", regency: "Kota/Kabupaten", province: "Provinsi", postal_code: "Kode pos", preferences: "Pilihan jurusan" };
   const formatAuditValue = (value: unknown) => Array.isArray(value) ? value.join(", ") || "Belum diisi" : value === null || value === "" || value === undefined ? "Belum diisi" : String(value);
-  const changedFields = Object.keys({ ...fields, preferences }).filter((field) => formatAuditValue(before?.[field as keyof typeof before]) !== formatAuditValue(({ ...fields, preferences })[field as keyof typeof fields]));
-  const detail = changedFields.map((field) => `${fieldLabels[field] ?? field}: "${formatAuditValue(before?.[field as keyof typeof before])}" → "${formatAuditValue(({ ...fields, preferences })[field as keyof typeof fields])}"`).join("; ");
-  const { error: auditError } = await admin.from("audit_logs").insert({ actor_id: context.user.id, actor_name: context.registration.full_name, action: `Memperbarui biodata peserta: ${detail || "tidak ada perubahan"}`, target: context.registration.registration_number });
+  const updatedFields = { ...fields, preferences };
+  const changedFields = Object.keys(updatedFields).filter((field) => formatAuditValue(before?.[field as keyof typeof before]) !== formatAuditValue(updatedFields[field as keyof typeof updatedFields]));
+  const changes = changedFields.map((field) => ({ field, label: fieldLabels[field] ?? field, before: formatAuditValue(before?.[field as keyof typeof before]), after: formatAuditValue(updatedFields[field as keyof typeof updatedFields]) }));
+  const detail = changes.map((change) => `${change.label}: "${change.before}" → "${change.after}"`).join("; ");
+  const { error: auditError } = await admin.from("audit_logs").insert({ actor_id: context.user.id, actor_name: context.registration.full_name, action: `Memperbarui biodata peserta: ${detail || "tidak ada perubahan"}`, target: context.registration.registration_number, metadata: { type: "participant_biodata_update", changes } });
   if (auditError) return { error: `Biodata tersimpan, tetapi audit log gagal dibuat: ${auditError.message}` };
   return { error: null };
 }
