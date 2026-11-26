@@ -2,6 +2,12 @@
 
 import { createRegistration, listRegistrations, registrationInputSchema } from "@/lib/registrations";
 
+function getDatabaseErrorMessage(error: { code?: string; message?: string } | null) {
+  if (error?.code === "22008") return "Format tanggal lahir tidak valid. Gunakan format YYYY-MM-DD atau DD/MM/YYYY.";
+  if (error?.code === "23505") return "NIK atau nomor registrasi sudah terdaftar.";
+  return error?.message || "Gagal menyimpan ke database.";
+}
+
 export async function submitRegistration(input: unknown) {
   const parsed = registrationInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, message: "Data registrasi tidak valid." };
@@ -16,11 +22,35 @@ export async function submitRegistration(input: unknown) {
   return { ok: true as const, data };
 }
 
+export async function validateRegistrations(inputs: unknown[]) {
+  return inputs.map((input, index) => {
+    const parsed = registrationInputSchema.safeParse(input);
+    if (parsed.success) return { row: index + 2, valid: true as const, errors: [] };
+    return { row: index + 2, valid: false as const, errors: parsed.error.issues.map((issue) => `${issue.path.join(".") || "data"}: ${issue.message}`) };
+  });
+}
+
+export async function importRegistrations(inputs: unknown[]) {
+  const results = [];
+  const errors: Array<{ row: number; messages: string[] }> = [];
+  for (const [index, input] of inputs.entries()) {
+    const parsed = registrationInputSchema.safeParse(input);
+    if (!parsed.success) {
+      errors.push({ row: index + 2, messages: parsed.error.issues.map((issue) => `${issue.path.join(".") || "data"}: ${issue.message}`) });
+      continue;
+    }
+    const result = await createRegistration(parsed.data);
+    if (result.data) results.push(result.data);
+    else errors.push({ row: index + 2, messages: [getDatabaseErrorMessage(result.error)] });
+  }
+  return { ok: true as const, count: results.length, errors };
+}
+
 export async function fetchRegistrations() {
   const { data, error } = await listRegistrations();
   if (error) {
     console.error("Failed to list registrations", error);
-    return { ok: false as const, message: "Data registrasi gagal dimuat." };
+    return { ok: false as const, message: `Data registrasi gagal dimuat: ${error.message}` };
   }
   return { ok: true as const, data: data ?? [] };
 }

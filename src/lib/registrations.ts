@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const registrationInputSchema = z.object({
   values: z.record(z.string(), z.string()),
@@ -20,8 +20,18 @@ export type RegistrationRecord = {
   submitted_at: string;
 };
 
+function normalizeDate(value: string) {
+  const date = value.trim();
+  const dayFirstMatch = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/.exec(date);
+  if (dayFirstMatch) {
+    const [, day, month, year] = dayFirstMatch;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+  return date;
+}
+
 export async function listRegistrations() {
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseAdminClient();
   return supabase
     .from("registrations")
     .select("id, registration_number, full_name, email, whatsapp_phone, batch, status, submitted_at")
@@ -39,7 +49,7 @@ export async function createRegistration(input: RegistrationInput) {
     program_level: values.programLevel,
     full_name: values.fullName.trim(),
     birth_place: values.birthPlace.trim(),
-    birth_date: values.birthDate || null,
+    birth_date: values.birthDate ? normalizeDate(values.birthDate) : null,
     gender: values.gender || null,
     passport_number: values.passport?.trim() || null,
     nik: values.nik.trim(),
@@ -67,5 +77,5 @@ export async function createRegistration(input: RegistrationInput) {
     batch: new Date().getFullYear(),
   };
 
-  return getSupabaseServerClient().from("registrations").insert(payload).select("id, registration_number").single();
+  return getSupabaseAdminClient().from("registrations").insert(payload).select("id, registration_number").single();
 }
