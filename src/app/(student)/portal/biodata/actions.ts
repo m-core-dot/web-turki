@@ -35,7 +35,7 @@ export type ParticipantBiodata = {
   status: string;
 };
 
-type EditableBiodata = Omit<ParticipantBiodata, "registration_number" | "program_level" | "full_name" | "email" | "nik" | "batch" | "status" | "preferences"> & { preferences: string[] };
+type EditableBiodata = Omit<ParticipantBiodata, "registration_number" | "program_level" | "full_name" | "email" | "nik" | "batch" | "status" | "school" | "school_city" | "school_province" | "major" | "source" | "preferences"> & { preferences: string[] };
 
 async function getParticipantId() {
   const { data: { user } } = await (await getSupabaseServerClient()).auth.getUser();
