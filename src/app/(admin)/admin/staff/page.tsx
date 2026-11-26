@@ -28,12 +28,13 @@ type Staff = {
 
 export default function StaffPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [actorRole, setActorRole] = useState("");
   const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchStaff().then((result) => {
-      if (result.ok) setStaff(result.data as Staff[]);
+      if (result.ok) { setStaff(result.data as Staff[]); setActorRole(result.actorRole); }
       else setLoadError(result.message);
     });
   }, []);
@@ -100,7 +101,22 @@ export default function StaffPage() {
             { key: "department", label: "Departemen", render: (item) => <span>{item.department}</span> },
             { key: "role", label: "Role", render: (item) => <span>{item.role}</span> },
             { key: "status", label: "Status", render: (item) => <Badge variant={item.status === "active" ? "success" : "default"} dot>{item.status === "active" ? "Aktif" : "Nonaktif"}</Badge> },
-            { key: "actions", label: "", className: "w-24 text-right", render: (item) => <div className="flex justify-end gap-1"><Button size="sm" variant="ghost" aria-label={`Edit ${item.name}`} onClick={() => openForm(item)}><Pencil className="h-4 w-4" /></Button>{item.email?.toLowerCase() !== "muafihimam@mumtazacenter.com" && <Button size="sm" variant="ghost" aria-label={`Hapus ${item.name}`} onClick={() => setDeleting(item)}><Trash2 className="h-4 w-4 text-danger-600" /></Button>}</div> },
+            { key: "actions", label: "", className: "w-24 text-right", render: (item) => {
+              const cannotEdit = actorRole === "Super Admin" && item.role === "Super Admin";
+              return <div className="flex justify-end gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={cannotEdit ? `${item.name} tidak dapat diedit` : `Edit ${item.name}`}
+                  title={cannotEdit ? "Akun Super Admin tidak dapat diedit oleh Super Admin lain" : "Edit staff"}
+                  disabled={cannotEdit}
+                  onClick={() => openForm(item)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                {item.email?.toLowerCase() !== "muafihimam@mumtazacenter.com" && <Button size="sm" variant="ghost" aria-label={`Hapus ${item.name}`} onClick={() => setDeleting(item)}><Trash2 className="h-4 w-4 text-danger-600" /></Button>}
+              </div>;
+            } },
           ]}
         />
       </Card>

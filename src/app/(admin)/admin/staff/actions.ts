@@ -1,7 +1,7 @@
 "use server";
 
 import { createStaff, deleteStaff, listStaff, staffInputSchema, updateStaff } from "@/lib/staff";
-import { getSupabaseAdminClient, defaultPassword } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, getSupabaseServerClient, defaultPassword } from "@/lib/supabase/server";
 
 export async function fetchStaff() {
   const { data, error } = await listStaff();
@@ -9,12 +9,34 @@ export async function fetchStaff() {
     console.error("Failed to list staff", error);
     return { ok: false as const, message: "Data staff gagal dimuat." };
   }
-  return { ok: true as const, data: data ?? [] };
+  const { data: { user } } = await getSupabaseServerClient().then((client) => client.auth.getUser());
+  let actorRole = "";
+  if (user) {
+    const { data: actor } = await getSupabaseAdminClient().from("staff").select("role").eq("auth_user_id", user.id).single();
+    actorRole = actor?.role ?? "";
+  }
+  return { ok: true as const, data: data ?? [], actorRole };
 }
 
 export async function saveStaff(input: unknown, id?: string) {
   const parsed = staffInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, message: "Data staff tidak valid." };
+
+  if (id) {
+    const admin = getSupabaseAdminClient();
+    const [{ data: currentStaff }, { data: currentUser }] = await Promise.all([
+      admin.from("staff").select("role").eq("id", id).single(),
+      (async () => {
+        const { data } = await (await getSupabaseServerClient()).auth.getUser();
+        return data.user;
+      })(),
+    ]);
+    if (currentStaff?.role === "Super Admin" && currentUser) {
+      const { data: actor } = await admin.from("staff").select("role").eq("auth_user_id", currentUser.id).single();
+      if (actor?.role === "Super Admin") return { ok: false as const, message: "Super Admin tidak dapat mengedit akun Super Admin lainnya." };
+    }
+  }
+
   const result = id ? await updateStaff(id, parsed.data) : await createStaff(parsed.data);
   if (result.error) {
     console.error("Failed to save staff", result.error);
