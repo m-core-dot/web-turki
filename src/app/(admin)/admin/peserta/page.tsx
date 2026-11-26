@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AdminTablePage } from "@/components/shared/admin-table-page";
@@ -18,6 +19,7 @@ type Participant = {
 };
 
 export default function PesertaPage() {
+  const router = useRouter();
   const [data, setData] = useState<Participant[]>([]);
   const [description, setDescription] = useState("Daftar peserta dan kelengkapan profil.");
 
@@ -47,7 +49,7 @@ export default function PesertaPage() {
     { key: "apps", label: "Aplikasi", render: (item) => <span>{item.applications}</span> },
     { key: "status", label: "Status", render: (item) => <Badge variant={item.status === "active" ? "success" : "warning"} dot>{item.status === "active" ? "Aktif" : "Belum Lengkap"}</Badge> },
     { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/peserta/${item.id}`} readOnly /> },
-  ]} />;
+  ]} onRowClick={(item) => router.push(`/admin/peserta/${item.id}`)} />;
 }
 
 
