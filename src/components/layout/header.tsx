@@ -33,13 +33,13 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       const { data: staff } = await supabase
         .from("staff")
-        .select("full_name, role")
+        .select("name, department")
         .eq("auth_user_id", user.id)
         .single();
 
       if (staff) {
-        setProfileName(staff.full_name || user.email?.split("@")[0] || "—");
-        setProfileRole(staff.role || "Staff");
+        setProfileName(staff.name || user.email?.split("@")[0] || "—");
+        setProfileRole(staff.department || "Staff");
       } else {
         setProfileName(user.email?.split("@")[0] ?? "—");
         setProfileRole("User");
