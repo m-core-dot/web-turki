@@ -37,24 +37,30 @@ export type ParticipantBiodata = {
 
 type EditableBiodata = Omit<ParticipantBiodata, "registration_number" | "program_level" | "full_name" | "email" | "nik" | "batch" | "status" | "school" | "school_city" | "school_province" | "major" | "source" | "preferences"> & { preferences: string[] };
 
-async function getParticipantId() {
+async function getParticipantContext() {
   const { data: { user } } = await (await getSupabaseServerClient()).auth.getUser();
   if (!user) return null;
-  const { data } = await getSupabaseAdminClient().from("registrations").select("id").eq("auth_user_id", user.id).maybeSingle();
-  return data?.id ?? null;
+  const { data } = await getSupabaseAdminClient().from("registrations").select("id, registration_number, full_name").eq("auth_user_id", user.id).maybeSingle();
+  return data ? { user, registration: data } : null;
 }
 
 export async function getParticipantBiodata() {
-  const id = await getParticipantId();
-  if (!id) return { data: null, error: "Sesi peserta tidak ditemukan." };
+  const context = await getParticipantContext();
+  if (!context) return { data: null, error: "Sesi peserta tidak ditemukan." };
+  const id = context.registration.id;
   const { data, error } = await getSupabaseAdminClient().from("registrations").select("registration_number, program_level, full_name, email, nik, passport_number, birth_place, birth_date, gender, whatsapp_phone, telegram_username, father_name, father_phone, mother_name, mother_phone, address, rt_rw, village, district, regency, province, postal_code, school, school_city, school_province, major, preferences, source, batch, status").eq("id", id).single();
   return { data: data as ParticipantBiodata | null, error: error?.message ?? null };
 }
 
 export async function updateParticipantBiodata(input: EditableBiodata) {
-  const id = await getParticipantId();
-  if (!id) return { error: "Sesi peserta tidak ditemukan." };
+  const context = await getParticipantContext();
+  if (!context) return { error: "Sesi peserta tidak ditemukan." };
   const { preferences, ...fields } = input;
-  const { error } = await getSupabaseAdminClient().from("registrations").update({ ...fields, preferences }).eq("id", id);
-  return { error: error?.message ?? null };
+  const admin = getSupabaseAdminClient();
+  const { error } = await admin.from("registrations").update({ ...fields, preferences }).eq("id", context.registration.id);
+  if (error) return { error: error.message };
+  const changedFields = Object.keys(fields).filter((field) => fields[field as keyof typeof fields] !== null && fields[field as keyof typeof fields] !== "");
+  const { error: auditError } = await admin.from("audit_logs").insert({ actor_id: context.user.id, actor_name: context.registration.full_name, action: `Memperbarui biodata peserta (${changedFields.join(", ") || "tidak ada perubahan"})`, target: context.registration.registration_number });
+  if (auditError) return { error: `Biodata tersimpan, tetapi audit log gagal dibuat: ${auditError.message}` };
+  return { error: null };
 }
