@@ -13,7 +13,6 @@ export type ParticipantBiodata = {
   regency: string | null;
   province: string | null;
   postal_code: string | null;
-  source_other: string | null;
 };
 
 async function getParticipantId() {
@@ -26,13 +25,13 @@ async function getParticipantId() {
 export async function getParticipantBiodata() {
   const id = await getParticipantId();
   if (!id) return { data: null, error: "Sesi peserta tidak ditemukan." };
-  const { data, error } = await getSupabaseAdminClient().from("registrations").select("full_name, nik, birth_place, birth_date, gender, whatsapp_phone, address, regency, province, postal_code, source_other").eq("id", id).single();
+  const { data, error } = await getSupabaseAdminClient().from("registrations").select("full_name, nik, birth_place, birth_date, gender, whatsapp_phone, address, regency, province, postal_code").eq("id", id).single();
   return { data: data as ParticipantBiodata | null, error: error?.message ?? null };
 }
 
 export async function updateParticipantBiodata(input: Omit<ParticipantBiodata, "full_name" | "nik">) {
   const id = await getParticipantId();
   if (!id) return { error: "Sesi peserta tidak ditemukan." };
-  const { error } = await getSupabaseAdminClient().from("registrations").update({ birth_place: input.birth_place?.trim() || null, birth_date: input.birth_date || null, gender: input.gender || null, whatsapp_phone: input.whatsapp_phone?.trim() || null, address: input.address?.trim() || null, regency: input.regency?.trim() || null, province: input.province?.trim() || null, postal_code: input.postal_code?.trim() || null, source_other: input.source_other?.trim() || null }).eq("id", id);
+  const { error } = await getSupabaseAdminClient().from("registrations").update({ birth_place: input.birth_place?.trim() || null, birth_date: input.birth_date || null, gender: input.gender || null, whatsapp_phone: input.whatsapp_phone?.trim() || null, address: input.address?.trim() || null, regency: input.regency?.trim() || null, province: input.province?.trim() || null, postal_code: input.postal_code?.trim() || null }).eq("id", id);
   return { error: error?.message ?? null };
 }
