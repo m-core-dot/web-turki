@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { ArrowRight, FileText, GraduationCap, Upload, UserRound } from "lucide-react";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,7 @@ function statusLabel(status: string) {
 }
 
 export default async function StudentDashboardPage() {
+  await connection();
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: registration } = user
