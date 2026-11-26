@@ -28,6 +28,7 @@ export default function BiodataPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { getParticipantBiodata().then((result) => { if (result.data) setData(result.data); }); }, []);
+  useEffect(() => { if (!saved) return; const timeout = window.setTimeout(() => setSaved(false), 4000); return () => window.clearTimeout(timeout); }, [saved]);
 
   const setField = (field: keyof ParticipantBiodata, value: string | string[]) => setData((current) => current ? { ...current, [field]: value } : current);
 
