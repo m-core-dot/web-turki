@@ -24,10 +24,31 @@ async function participantId() {
 export async function getEducation() {
   const id = await participantId();
   if (!id) return { data: [] as EducationRecord[], error: "Sesi peserta tidak ditemukan." };
-  const { data, error } = await getSupabaseAdminClient().from("registrations").select("school, school_city, school_province, major, batch, status").eq("id", id).single();
-  if (error) return { data: [] as EducationRecord[], error: error.message };
-  if (!data.school) return { data: [] as EducationRecord[], error: null };
-  return { data: [{ id: `registration-${id}`, education_level: "Pendidikan terakhir", institution_name: data.school, major: data.major, school_city: data.school_city, school_province: data.school_province, completion_year: data.batch, status: data.status === "approved" ? "verified" : "pending" }] as EducationRecord[], error: null };
+
+  const admin = getSupabaseAdminClient();
+  const [{ data: registration, error: registrationError }, { data: additional, error: additionalError }] = await Promise.all([
+    admin.from("registrations").select("school, school_city, school_province, major, batch, status").eq("id", id).single(),
+    admin.from("participant_education").select("id, education_level, institution_name, major, school_city, school_province, completion_year, status").eq("registration_id", id).order("created_at", { ascending: true }),
+  ]);
+
+  if (registrationError) return { data: [] as EducationRecord[], error: registrationError.message };
+  if (additionalError) return { data: [] as EducationRecord[], error: additionalError.message };
+
+  const records: EducationRecord[] = [];
+  if (registration.school) {
+    records.push({
+      id: `registration-${id}`,
+      education_level: "Pendidikan terakhir",
+      institution_name: registration.school,
+      major: registration.major,
+      school_city: registration.school_city,
+      school_province: registration.school_province,
+      completion_year: registration.batch,
+      status: registration.status === "approved" ? "verified" : "pending",
+    });
+  }
+  records.push(...((additional ?? []) as EducationRecord[]));
+  return { data: records, error: null };
 }
 
 export async function saveEducation(input: { id?: string; education_level: string; institution_name: string; major?: string; school_city?: string; school_province?: string; completion_year?: number; status?: EducationRecord["status"] }) {
