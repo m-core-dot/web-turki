@@ -16,6 +16,13 @@ const existingNiks = ["3174010101900001", "3273011201950002"];
 type FormState = { [key: string]: string | string[]; majors: string[] };
 const initialForm: FormState = { fullName: "", birthPlace: "", birthDate: "", gender: "", fatherName: "", motherName: "", passportNumber: "", nik: "", phone: "", telegram: "", email: "", parentPhone: "", address: "", village: "", rt: "", rw: "", district: "", regency: "", province: "", postalCode: "", school: "", schoolCity: "", schoolProvince: "", schoolMajor: "", majors: ["", "", ""], message: "" };
 
+function formatBirthDate(value: string) {
+  if (!value) return "";
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
 export default function RegistrasiPage() {
   const [step, setStep] = useState(0); const [submitted, setSubmitted] = useState(false); const [submitting, setSubmitting] = useState(false); const [submitError, setSubmitError] = useState("");
   const [nikError, setNikError] = useState(""); const [nikAvailability, setNikAvailability] = useState<string | null>(null); const [nikChecking, setNikChecking] = useState(false);   const [emailError, setEmailError] = useState(""); const [emailTouched, setEmailTouched] = useState(false); const [cities, setCities] = useState<string[]>([]); const [provinces, setProvinces] = useState<string[]>([]); const [addressSuggestions, setAddressSuggestions] = useState<"city" | "province" | null>(null); const [form, setForm] = useState<FormState>(initialForm);
@@ -54,7 +61,7 @@ export default function RegistrasiPage() {
   if (submitted) return <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-5 py-16 text-center"><div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-success-50"><CheckCircle2 className="h-8 w-8 text-success-600" /></div><h1 className="mt-6 text-2xl font-bold text-foreground">Registrasi berhasil dikirim</h1><p className="mt-3 leading-7 text-muted">Terima kasih, {form.fullName}. Tim Mumtaza Center akan menghubungi melalui WhatsApp atau email dalam 1–2 hari kerja.</p><Link href="/" className="mt-8 inline-flex h-10 items-center rounded-lg bg-primary-700 px-5 text-sm font-medium text-white hover:bg-primary-800">Kembali ke Beranda</Link></div>;
   const textInput = (key: string, label: string, placeholder: string, required = true, type = "text") => <Input label={label} required={required} type={type} value={typeof form[key] === "string" ? form[key] : ""} onChange={(event) => update(key, event.target.value, type)} placeholder={placeholder} error={key === "nik" ? nikError : undefined} helperText={key === "nik" ? nikAvailability ?? (nikChecking ? "Memeriksa ketersediaan NIK..." : undefined) : undefined} />;
   const reviewSections = [
-    { title: "Identitas", items: [["Nama lengkap sesuai paspor", form.fullName], ["Tempat lahir sesuai paspor", form.birthPlace], ["Tanggal lahir", form.birthDate], ["Jenis kelamin", form.gender], ["Nomor paspor", form.passportNumber], ["NIK KTP", form.nik]] },
+    { title: "Identitas", items: [["Nama lengkap sesuai paspor", form.fullName], ["Tempat lahir sesuai paspor", form.birthPlace], ["Tanggal lahir", formatBirthDate(String(form.birthDate))], ["Jenis kelamin", form.gender], ["Nomor paspor", form.passportNumber], ["NIK KTP", form.nik]] },
     { title: "Keluarga & Kontak", items: [["Nama ayah", form.fatherName], ["Nama ibu", form.motherName], ["WhatsApp", form.phone], ["Username Telegram", form.telegram], ["Email aktif", form.email], ["Telepon orang tua", form.parentPhone]] },
     { title: "Alamat", items: [["Alamat lengkap", form.address], ["Kelurahan / Desa", form.village], ["RT", form.rt], ["RW", form.rw], ["Kecamatan", form.district], ["Kota / Kabupaten", form.regency], ["Provinsi", form.province], ["Kode pos", form.postalCode]] },
     { title: "Pendidikan", items: [["Asal sekolah", form.school], ["Kota asal sekolah", form.schoolCity], ["Provinsi asal sekolah", form.schoolProvince], ["Jurusan", form.schoolMajor]] },
