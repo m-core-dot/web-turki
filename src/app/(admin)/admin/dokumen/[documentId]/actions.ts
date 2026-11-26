@@ -8,5 +8,5 @@ export async function getAdminDocumentDetail(id: string) {
   if (error) return { data: null, error: error.message };
   if (!document) return { data: null, error: "Dokumen tidak ditemukan." };
   const { data: registration } = await supabase.from("registrations").select("full_name").eq("registration_number", document.registration_number).maybeSingle();
-  return { data: { ...document, student: registration?.full_name ?? document.registration_number }, error: null };
+  return { data: { ...document, student: registration?.full_name ?? document.registration_number, status: document.status === "revision" ? "needs_revision" : document.status === "not_uploaded" && document.uploaded_at ? "pending_review" : document.status }, error: null };
 }

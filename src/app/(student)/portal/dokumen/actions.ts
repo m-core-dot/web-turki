@@ -83,6 +83,6 @@ export async function uploadDocument(documentType: string, formData: FormData) {
   });
   const result = await response.json() as { ok?: boolean; message?: string; fileId?: string; webViewLink?: string; fileName?: string };
   if (!response.ok || !result.ok || !result.fileId) return { error: result.message || "File gagal disimpan." };
-  const { error } = await admin.from("participant_documents").upsert({ registration_number: registration.registration_number, document_type: documentType, file_name: result.fileName || fileName, drive_file_id: result.fileId, drive_url: result.webViewLink || null, status: "not_uploaded", revision_number: revisionNumber, uploaded_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: "registration_number,document_type" });
+  const { error } = await admin.from("participant_documents").upsert({ registration_number: registration.registration_number, document_type: documentType, file_name: result.fileName || fileName, drive_file_id: result.fileId, drive_url: result.webViewLink || null, status: "pending_review", revision_number: revisionNumber, uploaded_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: "registration_number,document_type" });
   return error ? { error: error.message } : { error: null };
 }

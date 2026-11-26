@@ -27,7 +27,7 @@ export async function getAdminDocuments() {
       type: document.document_type,
       version: `v${document.revision_number + 1}`,
       uploadedAt: document.uploaded_at ? new Date(document.uploaded_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-",
-      status: document.status === "revision" ? "needs_revision" : document.status,
+      status: document.status === "revision" ? "needs_revision" : document.status === "not_uploaded" && document.uploaded_at ? "pending_review" : document.status,
     })) as AdminDocument[],
     error: null,
   };
