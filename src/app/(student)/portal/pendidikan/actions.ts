@@ -38,13 +38,25 @@ export async function saveEducation(input: { id?: string; education_level: strin
   if (input.id?.startsWith("registration-")) return { error: "Data pendidikan pendaftaran tidak dapat diubah dari riwayat pendidikan." };
   const query = input.id ? admin.from("participant_education").update(payload).eq("id", input.id).eq("registration_id", id) : admin.from("participant_education").insert(payload);
   const { error } = await query;
-  return { error: error?.message ?? null };
+  if (error) return { error: error.message };
+  const server = await getSupabaseServerClient();
+  const { data: { user } } = await server.auth.getUser();
+  const { data: registration } = await admin.from("registrations").select("registration_number, full_name").eq("id", id).single();
+  await admin.from("audit_logs").insert({ actor_id: user?.id ?? null, actor_name: registration?.full_name ?? user?.email ?? "Peserta", action: input.id ? "Memperbarui riwayat pendidikan" : "Menambahkan riwayat pendidikan", target: registration?.registration_number ?? id, metadata: { type: "participant_education_update", education: payload } });
+  return { error: null };
 }
 
 export async function deleteEducation(id: string) {
   const registrationId = await participantId();
   if (!registrationId) return { error: "Sesi peserta tidak ditemukan." };
   if (id.startsWith("registration-")) return { error: "Data pendidikan pendaftaran tidak dapat dihapus dari riwayat pendidikan." };
-  const { error } = await getSupabaseAdminClient().from("participant_education").delete().eq("id", id).eq("registration_id", registrationId);
-  return { error: error?.message ?? null };
+  const admin = getSupabaseAdminClient();
+  const { data: education } = await admin.from("participant_education").select("*").eq("id", id).eq("registration_id", registrationId).single();
+  const { error } = await admin.from("participant_education").delete().eq("id", id).eq("registration_id", registrationId);
+  if (error) return { error: error.message };
+  const server = await getSupabaseServerClient();
+  const { data: { user } } = await server.auth.getUser();
+  const { data: registration } = await admin.from("registrations").select("registration_number, full_name").eq("id", registrationId).single();
+  await admin.from("audit_logs").insert({ actor_id: user?.id ?? null, actor_name: registration?.full_name ?? user?.email ?? "Peserta", action: "Menghapus riwayat pendidikan", target: registration?.registration_number ?? registrationId, metadata: { type: "participant_education_delete", education } });
+  return { error: null };
 }
