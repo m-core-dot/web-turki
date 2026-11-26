@@ -12,6 +12,17 @@ export async function checkPublicNik(nik: string) {
     : { available: false, message: "NIK sudah terdaftar dan registrasinya masih menunggu review." };
 }
 
+export async function getAddressSuggestions() {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("registrations")
+    .select("regency, province")
+    .order("province", { ascending: true });
+  if (error) return { cities: [] as string[], provinces: [] as string[] };
+  const cities = [...new Set((data ?? []).map((item) => item.regency?.trim()).filter(Boolean))].sort();
+  const provinces = [...new Set((data ?? []).map((item) => item.province?.trim()).filter(Boolean))].sort();
+  return { cities, provinces };
+}
+
 export async function submitPublicRegistration(values: Record<string, string | string[]>) {
   const majors = Array.isArray(values.majors) ? values.majors : [];
   const input = {
@@ -31,12 +42,12 @@ export async function submitPublicRegistration(values: Record<string, string | s
       motherName: String(values.motherName ?? ""),
       motherPhone: String(values.parentPhone ?? ""),
       address: String(values.address ?? ""),
-      rtRw: `${String(values.rt ?? "").trim()}/${String(values.rw ?? "").trim()}`,
+      rtRw: `${String(values.rt ?? "").trim() || "-"}/${String(values.rw ?? "").trim() || "-"}`, 
       village: String(values.village ?? ""),
       district: String(values.district ?? ""),
       regency: String(values.regency ?? ""),
       province: String(values.province ?? ""),
-      postalCode: String(values.postalCode ?? ""),
+      postalCode: String(values.postalCode ?? "").trim() || "-",
       school: String(values.school ?? ""),
       schoolCity: String(values.schoolCity ?? ""),
       schoolProvince: String(values.schoolProvince ?? ""),
