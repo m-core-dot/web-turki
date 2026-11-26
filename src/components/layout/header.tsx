@@ -38,10 +38,10 @@ export function Header({ onMenuClick }: HeaderProps) {
         .single();
 
       if (staff) {
-        setProfileName(staff.full_name || user.email || "—");
+        setProfileName(staff.full_name || user.email?.split("@")[0] || "—");
         setProfileRole(staff.role || "Staff");
       } else {
-        setProfileName(user.email ?? "—");
+        setProfileName(user.email?.split("@")[0] ?? "—");
         setProfileRole("User");
       }
     })();
