@@ -148,9 +148,9 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="border-t border-border pt-5">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Informasi pekerjaan</p>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Departemen" value={profileRole} readOnly />
-            <Input label="Role" value={profileJobRole} readOnly />
-            <Input label="Status" value={profileStatus === "active" ? "Aktif" : "Nonaktif"} readOnly />
+            <Input label="Departemen" value={profileRole} readOnly className="cursor-not-allowed bg-background-alt text-muted" />
+            <Input label="Role" value={profileJobRole} readOnly className="cursor-not-allowed bg-background-alt text-muted" />
+            <Input label="Status" value={profileStatus === "active" ? "Aktif" : "Nonaktif"} readOnly className="cursor-not-allowed bg-background-alt text-muted" />
           </div>
         </div>
       </div>
