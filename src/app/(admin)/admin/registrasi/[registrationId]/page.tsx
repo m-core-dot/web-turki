@@ -67,6 +67,12 @@ export default function RegistrationDetailPage() {
   const display = (key: string, fallback = "-") => String(item?.[key] ?? fallback);
   const action = async () => {
     if (confirm === "approve" && item) {
+      const hasProof = Boolean(item.proof_file_name || item.proof_drive_file_id || item.proof_drive_url || item.proof_storage_path);
+      if (!hasProof) {
+        setConfirm(null);
+        toast({ title: "Bukti pendaftaran belum tersedia", description: "Isi dan upload Bukti pendaftaran terlebih dahulu sebelum menyetujui registrasi.", variant: "warning" });
+        return;
+      }
       const result = await approveRegistration(item.registration_number);
       toast({ title: result.ok ? "Registrasi disetujui" : "Persetujuan gagal", description: result.ok ? `Login: ${result.login}. Password awal: ${result.temporaryPassword}` : result.message, variant: result.ok ? "success" : "warning" });
       if (result.ok) setItem((current) => current ? { ...current, status: "approved" } : current);

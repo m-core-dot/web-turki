@@ -125,9 +125,12 @@ export async function uploadParticipantDocument(registrationNumber: string, docu
 
 export async function approveRegistration(registrationNumber: string) {
   const supabase = getSupabaseAdminClient();
-  const { data: registration, error: lookupError } = await supabase.from("registrations").select("id, email, nik, status").eq("registration_number", registrationNumber).single();
+  const { data: registration, error: lookupError } = await supabase.from("registrations").select("id, email, nik, status, proof_file_name, proof_drive_file_id, proof_drive_url, proof_storage_path").eq("registration_number", registrationNumber).single();
   if (lookupError || !registration) return { ok: false as const, message: "Registrasi tidak ditemukan." };
   if (registration.status === "approved") return { ok: false as const, message: "Registrasi sudah disetujui sebelumnya." };
+  if (!registration.proof_file_name && !registration.proof_drive_file_id && !registration.proof_drive_url && !registration.proof_storage_path) {
+    return { ok: false as const, message: "Bukti pendaftaran harus diisi terlebih dahulu sebelum registrasi disetujui." };
+  }
 
   const email = registration.email.trim().toLowerCase();
   const { data: authUser, error: authError } = await supabase.auth.admin.createUser({ email, password: defaultPassword, email_confirm: true });
