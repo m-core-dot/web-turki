@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight } from "lucide-react";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, getSupabaseServerClient } from "@/lib/supabase/server";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { StatusTimeline } from "@/components/shared/status-timeline";
 
@@ -18,7 +18,7 @@ export default async function StudentDashboardPage() {
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: registration } = user
-    ? await supabase.from("registrations").select("full_name, registration_number, status, submitted_at").eq("auth_user_id", user.id).maybeSingle()
+    ? await getSupabaseAdminClient().from("registrations").select("full_name, registration_number, status, submitted_at").eq("auth_user_id", user.id).maybeSingle()
     : { data: null };
 
   if (!user || !registration) {
