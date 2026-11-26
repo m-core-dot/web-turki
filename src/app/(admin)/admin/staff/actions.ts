@@ -1,7 +1,7 @@
 "use server";
 
 import { createStaff, deleteStaff, listStaff, staffInputSchema, updateStaff } from "@/lib/staff";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, defaultPassword } from "@/lib/supabase/server";
 
 export async function fetchStaff() {
   const { data, error } = await listStaff();
@@ -27,11 +27,10 @@ export async function resetStaffPassword(staffId: string) {
   const supabase = getSupabaseAdminClient();
   const { data: staff, error: staffError } = await supabase.from("staff").select("id, email, auth_user_id").eq("id", staffId).single();
   if (staffError || !staff?.auth_user_id) return { ok: false as const, message: "Akun Auth Staff tidak ditemukan." };
-  const uniqueCode = staff.auth_user_id.replace(/-/g, "").slice(0, 6).toUpperCase();
-  const password = `Masistur2019-${uniqueCode}`;
-  const { error } = await supabase.auth.admin.updateUserById(staff.auth_user_id, { password });
+  const { error } = await supabase.auth.admin.updateUserById(staff.auth_user_id, { password: defaultPassword });
   if (error) return { ok: false as const, message: "Password Staff gagal direset." };
-  return { ok: true as const, email: staff.email, password };
+  await supabase.from("staff").update({ must_change_password: true }).eq("id", staffId);
+  return { ok: true as const, email: staff.email, password: defaultPassword };
 }
 
 export async function removeStaff(id: string) {

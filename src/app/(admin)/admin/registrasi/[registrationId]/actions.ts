@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabaseAdminClient, participantDefaultPasswordPrefix } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, defaultPassword } from "@/lib/supabase/server";
 
 export async function fetchRegistration(id: string) {
   const { data, error } = await getSupabaseAdminClient()
@@ -115,8 +115,7 @@ export async function approveRegistration(registrationNumber: string) {
   if (registration.status === "approved") return { ok: false as const, message: "Registrasi sudah disetujui sebelumnya." };
 
   const email = registration.email.trim().toLowerCase();
-  const password = `${participantDefaultPasswordPrefix}${registrationNumber.replace(/^REG-\\d{4}-/, "")}`;
-  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({ email, password, email_confirm: true });
+  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({ email, password: defaultPassword, email_confirm: true });
   if (authError && authError.message.toLowerCase().includes("already been registered")) return { ok: false as const, message: "Email peserta sudah memiliki akun portal." };
   if (authError || !authUser.user) return { ok: false as const, message: authError?.message || "Akun portal gagal dibuat." };
 
@@ -126,7 +125,7 @@ export async function approveRegistration(registrationNumber: string) {
     return { ok: false as const, message: `Status registrasi gagal diperbarui: ${updateError.message}` };
   }
 
-  return { ok: true as const, login: email, temporaryPassword: password, nik: registration.nik };
+  return { ok: true as const, login: email, temporaryPassword: defaultPassword, nik: registration.nik };
 }
 
 export async function updateInternalNote(registrationNumber: string, note: string) {

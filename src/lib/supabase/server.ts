@@ -42,3 +42,4 @@ export function getSupabaseAdminClient() {
 }
 
 export const participantDefaultPasswordPrefix = "Masistur2019-";
+export const defaultPassword = "Masistur2019";

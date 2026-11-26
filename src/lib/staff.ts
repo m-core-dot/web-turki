@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, defaultPassword } from "@/lib/supabase/server";
 
 export const staffInputSchema = z.object({
   name: z.string().trim().min(1),
@@ -25,7 +25,7 @@ export async function createStaff(input: StaffInput) {
   const parsed = staffInputSchema.parse(input);
   const supabase = getSupabaseAdminClient();
   const email = parsed.email.toLowerCase();
-  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({ email, password: `Masistur2019-${crypto.randomUUID().replace(/-/g, "").slice(0, 6)}`, email_confirm: true });
+  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({ email, password: defaultPassword, email_confirm: true });
   if (authError || !authUser.user) return { data: null, error: authError ?? new Error("Akun staff gagal dibuat.") };
   return supabase
     .from("staff")

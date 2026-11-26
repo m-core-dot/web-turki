@@ -7,6 +7,7 @@ import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { checkMustChangePassword } from "./actions";
 
 function LoginForm() {
   const router = useRouter();
@@ -20,12 +21,21 @@ function LoginForm() {
     event.preventDefault();
     setError("");
     setLoading(true);
-    const { error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({ email: email.trim(), password });
+    const supabase = getSupabaseBrowserClient();
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (signInError) {
       setError("Email atau password tidak valid.");
       setLoading(false);
       return;
     }
+
+    const mustChange = await checkMustChangePassword(data.user.id);
+    if (mustChange) {
+      router.replace("/ganti-password");
+      router.refresh();
+      return;
+    }
+
     const next = searchParams.get("next");
     router.replace(next?.startsWith("/") ? next : "/admin");
     router.refresh();
