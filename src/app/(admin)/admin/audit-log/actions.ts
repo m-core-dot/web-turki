@@ -8,12 +8,13 @@ export type AuditLog = {
   action: string;
   target: string;
   createdAt: string;
+  metadata: { type?: string; changes?: Array<{ field: string; label: string; before: string; after: string }> };
 };
 
 export async function fetchAuditLogs() {
   const { data, error } = await getSupabaseAdminClient()
     .from("audit_logs")
-    .select("id, actor_name, action, target, created_at")
+    .select("id, actor_name, action, target, created_at, metadata")
     .order("created_at", { ascending: false });
 
   if (error) return { ok: false as const, message: "Audit log gagal dimuat.", data: [] as AuditLog[] };
@@ -26,6 +27,7 @@ export async function fetchAuditLogs() {
       action: item.action,
       target: item.target,
       createdAt: item.created_at,
+      metadata: item.metadata ?? {},
     })),
   };
 }
