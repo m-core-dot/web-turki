@@ -9,7 +9,9 @@ export async function fetchStaff() {
     console.error("Failed to list staff", error);
     return { ok: false as const, message: "Data staff gagal dimuat." };
   }
-  const { data: { user } } = await getSupabaseServerClient().then((client) => client.auth.getUser());
+  const client = await getSupabaseServerClient();
+  const { data: authData } = await client.auth.getUser();
+  const user = authData.user;
   let actorRole = "";
   if (user) {
     const { data: actor } = await getSupabaseAdminClient().from("staff").select("role").eq("auth_user_id", user.id).single();
