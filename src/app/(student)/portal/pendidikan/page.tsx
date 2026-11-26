@@ -185,6 +185,18 @@ export default function PendidikanPage() {
         }
       >
         <div className="space-y-4">
+          {!editing && <Select
+            label="Jenjang pendidikan"
+            options={[
+              { value: "SMA/MA dan SMK/MAK (sederajat)", label: "SMA/MA dan SMK/MAK (sederajat)" },
+              { value: "Sarjana (S1)", label: "Sarjana (S1)" },
+              { value: "Magister (S2)", label: "Magister (S2)" },
+              { value: "Doktor (S3)", label: "Doktor (S3)" },
+            ]}
+            value={form.education_level}
+            onChange={(value) => setForm({ ...form, education_level: value })}
+            placeholder="Pilih jenjang pendidikan"
+          />}
           <Input
             label="Nama institusi"
             value={form.institution_name}
