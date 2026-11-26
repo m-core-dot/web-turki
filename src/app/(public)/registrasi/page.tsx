@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +17,23 @@ type FormState = { [key: string]: string | string[]; majors: string[] };
 const initialForm: FormState = { fullName: "", birthPlace: "", birthDate: "", gender: "", fatherName: "", motherName: "", passportNumber: "", nik: "", phone: "", telegram: "", email: "", parentPhone: "", address: "", village: "", rt: "", rw: "", district: "", regency: "", province: "", postalCode: "", school: "", schoolCity: "", schoolProvince: "", schoolMajor: "", majors: ["", "", ""], message: "" };
 
 export default function RegistrasiPage() {
-  const [step, setStep] = useState(0); const [submitted, setSubmitted] = useState(false); const [submitting, setSubmitting] = useState(false); const [submitError, setSubmitError] = useState("");   const [nikError, setNikError] = useState(""); const [nikChecking, setNikChecking] = useState(false); const [emailError, setEmailError] = useState(""); const [form, setForm] = useState<FormState>(initialForm);
-  const update = (key: string, value: string, type?: string) => { const normalized = key === "nik" || key === "phone" || key === "parentPhone" ? value.replace(/\D/g, "") : type === "email" ? value.trim().toLowerCase() : type === "number" || type === "date" ? value : value.toUpperCase(); setForm((current) => ({ ...current, [key]: normalized })); if (key === "nik") setNikError(""); if (key === "email") setEmailError(""); };
+  const [step, setStep] = useState(0); const [submitted, setSubmitted] = useState(false); const [submitting, setSubmitting] = useState(false); const [submitError, setSubmitError] = useState("");   const [nikError, setNikError] = useState(""); const [nikAvailability, setNikAvailability] = useState<string | null>(null); const [nikChecking, setNikChecking] = useState(false); const [emailError, setEmailError] = useState(""); const [form, setForm] = useState<FormState>(initialForm);
+  const update = (key: string, value: string, type?: string) => { const normalized = key === "nik" || key === "phone" || key === "parentPhone" ? value.replace(/\D/g, "") : type === "email" ? value.trim().toLowerCase() : type === "number" || type === "date" ? value : value.toUpperCase(); setForm((current) => ({ ...current, [key]: normalized })); if (key === "nik") { setNikError(""); setNikAvailability(null); } if (key === "email") setEmailError(""); };
   const updateMajor = (index: number, value: string) => setForm((current) => ({ ...current, majors: current.majors.map((major, i) => i === index ? value : major) }));
   const isDuplicateNik = existingNiks.includes(String(form.nik).trim());
   const isNikComplete = String(form.nik).length === 16;
+  useEffect(() => {
+    if (!isNikComplete) return;
+    let cancelled = false;
+    setNikChecking(true);
+    checkPublicNik(String(form.nik)).then((result) => {
+      if (cancelled) return;
+      setNikChecking(false);
+      if (result.available) { setNikError(""); setNikAvailability("NIK dapat digunakan untuk registrasi."); }
+      else { setNikAvailability(null); setNikError(result.message); }
+    });
+    return () => { cancelled = true; };
+  }, [form.nik, isNikComplete]);
   const validateStep = () => { if (step === 0) return Boolean(form.fullName && form.birthPlace && form.birthDate && form.gender && isNikComplete); if (step === 1) return Boolean(form.fatherName && form.motherName && form.phone && form.email && form.parentPhone); if (step === 2) return Boolean(form.address && form.village && form.rt && form.rw && form.district && form.regency && form.province && form.postalCode); if (step === 3) return Boolean(form.school && form.schoolCity && form.schoolProvince && form.schoolMajor); return true; };
   const next = async () => {
     if (step === 0 && !isNikComplete) { setNikError("NIK harus terdiri dari 16 digit angka."); return; }
@@ -37,7 +49,7 @@ export default function RegistrasiPage() {
   };
   const submit = async () => { setSubmitting(true); setSubmitError(""); const result = await submitPublicRegistration(form); setSubmitting(false); if (!result.ok) { setSubmitError(result.message); return; } setSubmitted(true); };
   if (submitted) return <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-5 py-16 text-center"><div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-success-50"><CheckCircle2 className="h-8 w-8 text-success-600" /></div><h1 className="mt-6 text-2xl font-bold text-foreground">Registrasi berhasil dikirim</h1><p className="mt-3 leading-7 text-muted">Terima kasih, {form.fullName}. Tim Mumtaza Center akan menghubungi melalui WhatsApp atau email dalam 1–2 hari kerja.</p><Link href="/" className="mt-8 inline-flex h-10 items-center rounded-lg bg-primary-700 px-5 text-sm font-medium text-white hover:bg-primary-800">Kembali ke Beranda</Link></div>;
-  const textInput = (key: string, label: string, placeholder: string, required = true, type = "text") => <Input label={label} required={required} type={type} value={typeof form[key] === "string" ? form[key] : ""} onChange={(event) => update(key, event.target.value, type)} placeholder={placeholder} error={key === "nik" ? nikError : undefined} />;
+  const textInput = (key: string, label: string, placeholder: string, required = true, type = "text") => <Input label={label} required={required} type={type} value={typeof form[key] === "string" ? form[key] : ""} onChange={(event) => update(key, event.target.value, type)} placeholder={placeholder} error={key === "nik" ? nikError : undefined} helperText={key === "nik" ? nikAvailability ?? (nikChecking ? "Memeriksa ketersediaan NIK..." : undefined) : undefined} />;
   const reviewSections = [
     { title: "Identitas", items: [["Nama lengkap sesuai paspor", form.fullName], ["Tempat lahir sesuai paspor", form.birthPlace], ["Tanggal lahir", form.birthDate], ["Jenis kelamin", form.gender], ["Nomor paspor", form.passportNumber], ["NIK KTP", form.nik]] },
     { title: "Keluarga & Kontak", items: [["Nama ayah", form.fatherName], ["Nama ibu", form.motherName], ["WhatsApp", form.phone], ["Username Telegram", form.telegram], ["Email aktif", form.email], ["Telepon orang tua", form.parentPhone]] },
