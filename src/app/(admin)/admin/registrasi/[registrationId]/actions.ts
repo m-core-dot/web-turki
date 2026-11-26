@@ -92,10 +92,11 @@ export type ParticipantDocument = {
 
 export async function reviewParticipantDocument(id: string, status: "approved" | "rejected" | "revision", revisionNote?: string) {
   const supabase = getSupabaseAdminClient();
-  const { data: document, error: lookupError } = await supabase.from("participant_documents").select("revision_number").eq("id", id).single();
+  const { data: document, error: lookupError } = await supabase.from("participant_documents").select("registration_number, document_type, revision_number").eq("id", id).single();
   if (lookupError || !document) return { ok: false as const, message: "Dokumen tidak ditemukan." };
   const { error } = await supabase.from("participant_documents").update({ status, revision_note: status === "revision" ? revisionNote?.trim() || null : null, revision_number: status === "revision" ? document.revision_number + 1 : document.revision_number, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id);
   if (error) return { ok: false as const, message: error.message };
+  await writeAuditLog(`${status === "approved" ? "Menyetujui" : status === "rejected" ? "Menolak" : "Meminta revisi"} dokumen ${document.document_type}`, document.registration_number);
   return { ok: true as const };
 }
 
