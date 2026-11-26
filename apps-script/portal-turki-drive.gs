@@ -18,6 +18,7 @@ function doPost(e) {
     const bytes = Utilities.base64Decode(request.base64);
     const blob = Utilities.newBlob(bytes, request.mimeType || MimeType.OCTET_STREAM, sanitize(request.fileName));
     const file = categoryFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
     return json({ ok: true, fileId: file.getId(), fileName: file.getName(), webViewLink: `https://drive.google.com/open?id=${file.getId()}` });
   } catch (error) {
