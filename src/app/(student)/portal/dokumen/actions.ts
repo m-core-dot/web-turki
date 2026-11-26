@@ -6,6 +6,7 @@ export type StudentDocument = {
   document_type: string;
   description: string;
   file_name: string | null;
+  drive_url: string | null;
   status: "approved" | "pending_review" | "needs_revision" | "not_uploaded";
   revision_note: string | null;
 };
@@ -33,7 +34,7 @@ export async function getDocuments() {
   if (!registration) return { data: [], error: "Sesi peserta tidak ditemukan." };
   const { data: stored, error } = await getSupabaseAdminClient()
     .from("participant_documents")
-    .select("document_type, file_name, status, revision_note")
+    .select("document_type, file_name, drive_url, status, revision_note")
     .eq("registration_number", registration.registration_number);
   if (error) return { data: [], error: error.message };
 
@@ -43,7 +44,7 @@ export async function getDocuments() {
       ? "needs_revision"
       : document?.status === "approved" ? "approved"
       : document?.file_name ? "pending_review" : "not_uploaded";
-    return { document_type: definition.type, description: definition.description, file_name: document?.file_name ?? null, status, revision_note: document?.revision_note ?? null };
+    return { document_type: definition.type, description: definition.description, file_name: document?.file_name ?? null, drive_url: document?.drive_url ?? null, status, revision_note: document?.revision_note ?? null };
   });
   return { data: documents, error: null };
 }
