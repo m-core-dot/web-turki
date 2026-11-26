@@ -56,8 +56,8 @@ export async function submitPublicRegistration(values: Record<string, string | s
       preferenceTwo: String(majors[1] ?? ""),
       preferenceThree: String(majors[2] ?? ""),
     },
-    source: "Website",
-    sourceOther: "",
+    source: String(values.source ?? ""),
+    sourceOther: String(values.sourceOther ?? ""),
   };
 
   try {
