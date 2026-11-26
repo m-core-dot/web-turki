@@ -1,5 +1,5 @@
-import { PageLoading } from "@/components/shared/state-views";
+import { AuthLoading } from "@/components/shared/auth-loading";
 
 export default function AdminLoading() {
-  return <PageLoading variant="table" />;
+  return <AuthLoading area="admin" />;
 }

@@ -62,6 +62,52 @@ export async function uploadRegistrationProof(registrationNumber: string, formDa
   return { ok: true as const, fileName: result.fileName || file.name, storagePath: result.webViewLink, proofUrl: result.webViewLink };
 }
 
+export type ParticipantDocument = {
+  id: string;
+  registration_number: string;
+  document_type: string;
+  file_name: string | null;
+  drive_file_id: string | null;
+  drive_url: string | null;
+  status: "approved" | "revision" | "rejected" | "not_uploaded";
+  revision_number: number;
+  revision_note: string | null;
+};
+
+export async function reviewParticipantDocument(id: string, status: "approved" | "rejected" | "revision", revisionNote?: string) {
+  const supabase = getSupabaseAdminClient();
+  const { data: document, error: lookupError } = await supabase.from("participant_documents").select("revision_number").eq("id", id).single();
+  if (lookupError || !document) return { ok: false as const, message: "Dokumen tidak ditemukan." };
+  const { error } = await supabase.from("participant_documents").update({ status, revision_note: status === "revision" ? revisionNote?.trim() || null : null, revision_number: status === "revision" ? document.revision_number + 1 : document.revision_number, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { ok: false as const, message: error.message };
+  return { ok: true as const };
+}
+
+export async function uploadParticipantDocument(registrationNumber: string, documentType: string, formData: FormData) {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false as const, message: "Pilih file dokumen terlebih dahulu." };
+  if (file.size > 10 * 1024 * 1024) return { ok: false as const, message: "Ukuran file maksimal 10 MB." };
+  if (!["application/pdf", "image/jpeg", "image/png"].includes(file.type)) return { ok: false as const, message: "Format file harus PDF, JPG, atau PNG." };
+
+  const supabase = getSupabaseAdminClient();
+  const { data: registration, error } = await supabase.from("registrations").select("full_name, batch").eq("registration_number", registrationNumber).single();
+  if (error || !registration) return { ok: false as const, message: "Data peserta tidak ditemukan." };
+  const { data: previous } = await supabase.from("participant_documents").select("revision_number").eq("registration_number", registrationNumber).eq("document_type", documentType).maybeSingle();
+  const revisionNumber = previous?.revision_number || 0;
+  const baseName = `${registration.full_name} - ${documentType}${revisionNumber > 0 ? ` - revisi ${revisionNumber}` : ""}`;
+  const extension = file.name.includes(".") ? `.${file.name.split(".").pop()}` : "";
+  const fileName = `${baseName}${extension}`;
+  const appsScriptUrl = process.env.GOOGLE_DRIVE_APPS_SCRIPT_URL;
+  const token = process.env.GOOGLE_DRIVE_APPS_SCRIPT_TOKEN;
+  if (!appsScriptUrl || !token) return { ok: false as const, message: "Integrasi Google Drive belum dikonfigurasi di server." };
+  const response = await fetch(appsScriptUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, registrationNumber, studentName: registration.full_name, batch: registration.batch, category: "dokumen_peserta", fileName, mimeType: file.type, base64: Buffer.from(await file.arrayBuffer()).toString("base64") }), cache: "no-store" });
+  const result = await response.json() as { ok?: boolean; message?: string; fileId?: string; webViewLink?: string; fileName?: string };
+  if (!response.ok || !result.ok || !result.fileId || !result.webViewLink) return { ok: false as const, message: result.message || "File gagal disimpan ke Google Drive." };
+  const { error: saveError } = await supabase.from("participant_documents").upsert({ registration_number: registrationNumber, document_type: documentType, file_name: result.fileName || fileName, drive_file_id: result.fileId, drive_url: result.webViewLink, status: "not_uploaded", revision_number: revisionNumber, uploaded_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: "registration_number,document_type" });
+  if (saveError) return { ok: false as const, message: saveError.message };
+  return { ok: true as const, fileName: result.fileName || fileName };
+}
+
 export async function approveRegistration(registrationNumber: string) {
   const supabase = getSupabaseAdminClient();
   const { data: registration, error: lookupError } = await supabase.from("registrations").select("id, email, nik, status").eq("registration_number", registrationNumber).single();

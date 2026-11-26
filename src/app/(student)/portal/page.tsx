@@ -14,7 +14,7 @@ function statusLabel(status: string) {
 }
 
 export default async function StudentDashboardPage() {
-  const supabase = getSupabaseServerClient();
+  const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: registration } = user
     ? await supabase.from("registrations").select("full_name, registration_number, status, submitted_at").eq("auth_user_id", user.id).maybeSingle()
