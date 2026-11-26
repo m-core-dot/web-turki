@@ -6,7 +6,10 @@ import { getSupabaseAdminClient } from "@/lib/supabase/server";
 export async function checkPublicNik(nik: string) {
   const { data, error } = await getSupabaseAdminClient().from("registrations").select("status").eq("nik", nik).neq("status", "rejected").maybeSingle();
   if (error) return { available: false, message: "NIK tidak dapat diverifikasi saat ini." };
-  return data ? { available: false, message: "NIK sudah terdaftar pada registrasi yang masih menunggu review atau sudah disetujui." } : { available: true, message: "" };
+  if (!data) return { available: true, message: "" };
+  return data.status === "approved"
+    ? { available: false, message: "NIK sudah terdaftar dan registrasinya telah disetujui." }
+    : { available: false, message: "NIK sudah terdaftar dan registrasinya masih menunggu review." };
 }
 
 export async function submitPublicRegistration(values: Record<string, string | string[]>) {
@@ -48,7 +51,7 @@ export async function submitPublicRegistration(values: Record<string, string | s
 
   try {
     const { data, error } = await createRegistration(input);
-    if (error?.code === "23505" || error?.code === "NIK_ACTIVE") return { ok: false as const, message: "NIK sudah terdaftar pada registrasi yang masih menunggu review atau sudah disetujui." };
+    if (error?.code === "23505" || error?.code === "NIK_ACTIVE") return { ok: false as const, message: error.message };
     if (error) {
       console.error("Failed to create public registration", error);
       return { ok: false as const, message: "Registrasi gagal disimpan. Coba lagi." };

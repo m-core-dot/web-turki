@@ -49,7 +49,7 @@ export async function createRegistration(input: RegistrationInput) {
     .neq("status", "rejected")
     .maybeSingle();
   if (existing.error) return { data: null, error: existing.error };
-  if (existing.data) return { data: null, error: { code: "NIK_ACTIVE", message: "NIK sudah terdaftar pada registrasi aktif." } };
+  if (existing.data) return { data: null, error: { code: "NIK_ACTIVE", message: existing.data.status === "approved" ? "NIK sudah terdaftar dan registrasinya telah disetujui." : "NIK sudah terdaftar dan registrasinya masih menunggu review." } };
 
   const preferences = ["One", "Two", "Three", "Four", "Five"]
     .map((suffix) => values[`preference${suffix}`]?.trim())
