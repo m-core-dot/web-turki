@@ -17,6 +17,7 @@ import { fetchStaff, removeStaff, saveStaff } from "./actions";
 type Staff = {
   id: string;
   name: string;
+  email: string;
   gender: "LAKI-LAKI" | "PEREMPUAN";
   phone: string;
   address: string;
@@ -39,12 +40,12 @@ export default function StaffPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Staff | null>(null);
   const [deleting, setDeleting] = useState<Staff | null>(null);
-  const [form, setForm] = useState({ name: "", gender: "LAKI-LAKI" as Staff["gender"], phone: "", address: "", department: "Admission", role: "Admission Officer", status: "active" as Staff["status"] });
+  const [form, setForm] = useState({ name: "", email: "", gender: "LAKI-LAKI" as Staff["gender"], phone: "", address: "", department: "Admission", role: "Admission Officer", status: "active" as Staff["status"] });
 
 
   const openForm = (member?: Staff) => {
     setEditing(member ?? null);
-    setForm(member ? { name: member.name, gender: member.gender, phone: member.phone, address: member.address, department: member.department, role: member.role, status: member.status } : { name: "", gender: "LAKI-LAKI", phone: "", address: "", department: "Admission", role: "Admission Officer", status: "active" });
+    setForm(member ? { name: member.name ?? "", email: member.email ?? "", gender: member.gender, phone: member.phone, address: member.address, department: member.department, role: member.role, status: member.status } : { name: "", email: "", gender: "LAKI-LAKI", phone: "", address: "", department: "Admission", role: "Admission Officer", status: "active" });
     setDialogOpen(true);
   };
 
@@ -59,7 +60,7 @@ export default function StaffPage() {
       }
       setStaff((current) => editing ? current.map((member) => member.id === editing.id ? result.data as Staff : member) : [result.data as Staff, ...current]);
       setDialogOpen(false);
-      toast({ title: editing ? "Staff diperbarui" : "Staff ditambahkan", description: "Data berhasil disimpan ke Supabase.", variant: "success" });
+      toast({ title: editing ? "Staff diperbarui" : "Staff ditambahkan", description: editing ? "Data berhasil disimpan ke Supabase." : "Akun login Staff berhasil dibuat dengan password awal unik. Ganti password setelah login.", variant: "success" });
     });
     return;
     toast({ title: editing ? "Staff diperbarui" : "Staff ditambahkan", description: "Data tersimpan sebagai preview UI.", variant: "success" });
@@ -99,21 +100,24 @@ export default function StaffPage() {
             { key: "department", label: "Departemen", render: (item) => <span>{item.department}</span> },
             { key: "role", label: "Role", render: (item) => <span>{item.role}</span> },
             { key: "status", label: "Status", render: (item) => <Badge variant={item.status === "active" ? "success" : "default"} dot>{item.status === "active" ? "Aktif" : "Nonaktif"}</Badge> },
-            { key: "actions", label: "", className: "w-24 text-right", render: (item) => <div className="flex justify-end gap-1"><Button size="sm" variant="ghost" aria-label={`Edit ${item.name}`} onClick={() => openForm(item)}><Pencil className="h-4 w-4" /></Button><Button size="sm" variant="ghost" aria-label={`Hapus ${item.name}`} onClick={() => setDeleting(item)}><Trash2 className="h-4 w-4 text-danger-600" /></Button></div> },
+            { key: "actions", label: "", className: "w-24 text-right", render: (item) => <div className="flex justify-end gap-1"><Button size="sm" variant="ghost" aria-label={`Edit ${item.name}`} onClick={() => openForm(item)}><Pencil className="h-4 w-4" /></Button>{item.email?.toLowerCase() !== "muafihimam@mumtazacenter.com" && <Button size="sm" variant="ghost" aria-label={`Hapus ${item.name}`} onClick={() => setDeleting(item)}><Trash2 className="h-4 w-4 text-danger-600" /></Button>}</div> },
           ]}
         />
       </Card>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} size="xl" title={editing ? "Edit Staff" : "Tambah Staff"} description="Lengkapi informasi staff operasional." footer={<><Button variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button><Button onClick={save} disabled={saving || !form.name.trim() || !form.phone.trim() || !form.address.trim()} isLoading={saving}><Plus className="h-4 w-4" />Simpan</Button></>}>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} size="xl" title={editing ? "Edit Staff" : "Tambah Staff"} description="Lengkapi informasi staff operasional." footer={<><Button variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button><Button onClick={save} disabled={saving || !(form.name ?? "").trim() || !(form.email ?? "").trim() || !(form.phone ?? "").trim() || !(form.address ?? "").trim()} isLoading={saving}><Plus className="h-4 w-4" />Simpan</Button></>}>
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nama lengkap" required value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
+            <Input label="Email login" required type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} />
             <Select label="Jenis kelamin" options={[{ value: "LAKI-LAKI", label: "Laki-laki" }, { value: "PEREMPUAN", label: "Perempuan" }]} value={form.gender} onChange={(gender) => setForm((current) => ({ ...current, gender: gender as Staff["gender"] }))} />
             <Input label="Nomor telepon aktif (WhatsApp)" required type="tel" inputMode="numeric" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value.replace(/\D/g, "") }))} />
             <Textarea label="Alamat" required value={form.address} onChange={(event) => setForm((current) => ({ ...current, address: event.target.value }))} />
           </div>
-          <Select label="Departemen" options={[{ value: "Admission", label: "Admission" }, { value: "Finance", label: "Finance" }, { value: "University", label: "University" }]} value={form.department} onChange={(department) => setForm((current) => ({ ...current, department }))} />
-          <Select label="Role" options={[{ value: "Admission Officer", label: "Admission Officer" }, { value: "Finance Officer", label: "Finance Officer" }, { value: "University Officer", label: "University Officer" }]} value={form.role} onChange={(role) => setForm((current) => ({ ...current, role }))} />
-          <Select label="Status" options={[{ value: "active", label: "Aktif" }, { value: "inactive", label: "Nonaktif" }]} value={form.status} onChange={(status) => setForm((current) => ({ ...current, status: status as Staff["status"] }))} />
+          {editing?.email?.toLowerCase() !== "muafihimam@mumtazacenter.com" && <>
+            <Select label="Departemen" options={[{ value: "Admission", label: "Admission" }, { value: "Finance", label: "Finance" }, { value: "University", label: "University" }]} value={form.department} onChange={(department) => setForm((current) => ({ ...current, department }))} />
+            <Select label="Role" options={[{ value: "Admission Officer", label: "Admission Officer" }, { value: "Finance Officer", label: "Finance Officer" }, { value: "University Officer", label: "University Officer" }]} value={form.role} onChange={(role) => setForm((current) => ({ ...current, role }))} />
+            <Select label="Status" options={[{ value: "active", label: "Aktif" }, { value: "inactive", label: "Nonaktif" }]} value={form.status} onChange={(status) => setForm((current) => ({ ...current, status: status as Staff["status"] }))} />
+          </>}
         </div>
       </Dialog>
       <ConfirmDialog open={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} title="Hapus staff?" description={`Akun staff ${deleting?.name ?? "ini"} akan dihapus dari preview UI.`} confirmLabel="Hapus Staff" />

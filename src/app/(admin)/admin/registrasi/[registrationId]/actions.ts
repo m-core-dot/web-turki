@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, participantDefaultPasswordPrefix } from "@/lib/supabase/server";
 
 export async function fetchRegistration(id: string) {
   const { data, error } = await getSupabaseAdminClient()
@@ -60,6 +60,27 @@ export async function uploadRegistrationProof(registrationNumber: string, formDa
   const { error } = await supabase.from("registrations").update({ proof_file_name: result.fileName || file.name, proof_drive_file_id: result.fileId, proof_drive_url: result.webViewLink }).eq("registration_number", registrationNumber);
   if (error) return { ok: false as const, message: `Metadata file gagal disimpan: ${error.message}` };
   return { ok: true as const, fileName: result.fileName || file.name, storagePath: result.webViewLink, proofUrl: result.webViewLink };
+}
+
+export async function approveRegistration(registrationNumber: string) {
+  const supabase = getSupabaseAdminClient();
+  const { data: registration, error: lookupError } = await supabase.from("registrations").select("id, email, nik, status").eq("registration_number", registrationNumber).single();
+  if (lookupError || !registration) return { ok: false as const, message: "Registrasi tidak ditemukan." };
+  if (registration.status === "approved") return { ok: false as const, message: "Registrasi sudah disetujui sebelumnya." };
+
+  const email = registration.email.trim().toLowerCase();
+  const password = `${participantDefaultPasswordPrefix}${registrationNumber.replace(/^REG-\\d{4}-/, "")}`;
+  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({ email, password, email_confirm: true });
+  if (authError && authError.message.toLowerCase().includes("already been registered")) return { ok: false as const, message: "Email peserta sudah memiliki akun portal." };
+  if (authError || !authUser.user) return { ok: false as const, message: authError?.message || "Akun portal gagal dibuat." };
+
+  const { error: updateError } = await supabase.from("registrations").update({ status: "approved", auth_user_id: authUser.user.id, must_change_password: true }).eq("id", registration.id);
+  if (updateError) {
+    await supabase.auth.admin.deleteUser(authUser.user.id);
+    return { ok: false as const, message: `Status registrasi gagal diperbarui: ${updateError.message}` };
+  }
+
+  return { ok: true as const, login: email, temporaryPassword: password, nik: registration.nik };
 }
 
 export async function updateInternalNote(registrationNumber: string, note: string) {

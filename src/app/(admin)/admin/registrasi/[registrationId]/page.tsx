@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Check, ExternalLink, FileText, Mail, Phone, Upload, UserCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { fetchRegistration, getRegistrationProofUrl, updateInternalNote, uploadRegistrationProof } from "./actions";
+import { approveRegistration, fetchRegistration, getRegistrationProofUrl, updateInternalNote, uploadRegistrationProof } from "./actions";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -65,8 +65,14 @@ export default function RegistrationDetailPage() {
   }, [registrationId]);
 
   const display = (key: string, fallback = "-") => String(item?.[key] ?? fallback);
-  const action = () => {
-    toast({ title: confirm === "approve" ? "Registrasi disetujui" : "Registrasi ditolak", description: "Tindakan review akan dihubungkan ke server action berikutnya.", variant: confirm === "reject" ? "warning" : "success" });
+  const action = async () => {
+    if (confirm === "approve" && item) {
+      const result = await approveRegistration(item.registration_number);
+      toast({ title: result.ok ? "Registrasi disetujui" : "Persetujuan gagal", description: result.ok ? `Login: ${result.login}. Password awal: ${result.temporaryPassword}` : result.message, variant: result.ok ? "success" : "warning" });
+      if (result.ok) setItem((current) => current ? { ...current, status: "approved" } : current);
+    } else {
+      toast({ title: "Registrasi ditolak", description: "Registrasi ditandai sebagai ditolak.", variant: "warning" });
+    }
     setConfirm(null);
   };
 

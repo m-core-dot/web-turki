@@ -26,3 +26,5 @@ export function getSupabaseAdminClient() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
+
+export const participantDefaultPasswordPrefix = "Masistur2019-";
