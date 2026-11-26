@@ -59,7 +59,7 @@ export default function PendidikanPage() {
   const save = async () => {
     const result = await saveEducation({
       id: editing?.id,
-      education_level: form.education_level,
+      education_level: editing?.education_level ?? form.education_level,
       institution_name: form.institution_name,
       major: form.major,
       school_city: form.school_city,
@@ -185,16 +185,6 @@ export default function PendidikanPage() {
         }
       >
         <div className="space-y-4">
-          <Select
-            label="Jenjang pendidikan"
-            options={[
-              { value: "SMA / Sederajat", label: "SMA / Sederajat" },
-              { value: "Universitas", label: "Universitas" },
-            ]}
-            value={form.education_level}
-            onChange={(value) => setForm({ ...form, education_level: value })}
-            placeholder="Pilih jenjang"
-          />
           <Input
             label="Nama institusi"
             value={form.institution_name}
