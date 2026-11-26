@@ -7,7 +7,7 @@ import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { checkMustChangePassword } from "./actions";
+import { checkMustChangePassword, getLoginDestination } from "./actions";
 
 function LoginForm() {
   const router = useRouter();
@@ -37,7 +37,8 @@ function LoginForm() {
     }
 
     const next = searchParams.get("next");
-    router.replace(next?.startsWith("/") ? next : "/admin");
+    const destination = await getLoginDestination(data.user.id);
+    router.replace(next?.startsWith("/") && next.startsWith(destination === "/admin" ? "/admin" : "/portal") ? next : destination);
     router.refresh();
   }
 
