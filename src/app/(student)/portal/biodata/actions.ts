@@ -3,17 +3,39 @@
 import { getSupabaseAdminClient, getSupabaseServerClient } from "@/lib/supabase/server";
 
 export type ParticipantBiodata = {
+  registration_number: string;
+  program_level: string;
   full_name: string;
+  email: string;
   nik: string | null;
+  passport_number: string | null;
   birth_place: string | null;
   birth_date: string | null;
   gender: string | null;
   whatsapp_phone: string | null;
+  telegram_username: string | null;
+  father_name: string | null;
+  father_phone: string | null;
+  mother_name: string | null;
+  mother_phone: string | null;
   address: string | null;
+  rt_rw: string | null;
+  village: string | null;
+  district: string | null;
   regency: string | null;
   province: string | null;
   postal_code: string | null;
+  school: string | null;
+  school_city: string | null;
+  school_province: string | null;
+  major: string | null;
+  preferences: string[] | null;
+  source: string | null;
+  batch: number;
+  status: string;
 };
+
+type EditableBiodata = Omit<ParticipantBiodata, "registration_number" | "program_level" | "full_name" | "email" | "nik" | "batch" | "status" | "preferences"> & { preferences: string[] };
 
 async function getParticipantId() {
   const { data: { user } } = await (await getSupabaseServerClient()).auth.getUser();
@@ -25,13 +47,14 @@ async function getParticipantId() {
 export async function getParticipantBiodata() {
   const id = await getParticipantId();
   if (!id) return { data: null, error: "Sesi peserta tidak ditemukan." };
-  const { data, error } = await getSupabaseAdminClient().from("registrations").select("full_name, nik, birth_place, birth_date, gender, whatsapp_phone, address, regency, province, postal_code").eq("id", id).single();
+  const { data, error } = await getSupabaseAdminClient().from("registrations").select("registration_number, program_level, full_name, email, nik, passport_number, birth_place, birth_date, gender, whatsapp_phone, telegram_username, father_name, father_phone, mother_name, mother_phone, address, rt_rw, village, district, regency, province, postal_code, school, school_city, school_province, major, preferences, source, batch, status").eq("id", id).single();
   return { data: data as ParticipantBiodata | null, error: error?.message ?? null };
 }
 
-export async function updateParticipantBiodata(input: Omit<ParticipantBiodata, "full_name" | "nik">) {
+export async function updateParticipantBiodata(input: EditableBiodata) {
   const id = await getParticipantId();
   if (!id) return { error: "Sesi peserta tidak ditemukan." };
-  const { error } = await getSupabaseAdminClient().from("registrations").update({ birth_place: input.birth_place?.trim() || null, birth_date: input.birth_date || null, gender: input.gender || null, whatsapp_phone: input.whatsapp_phone?.trim() || null, address: input.address?.trim() || null, regency: input.regency?.trim() || null, province: input.province?.trim() || null, postal_code: input.postal_code?.trim() || null }).eq("id", id);
+  const { preferences, ...fields } = input;
+  const { error } = await getSupabaseAdminClient().from("registrations").update({ ...fields, preferences }).eq("id", id);
   return { error: error?.message ?? null };
 }
