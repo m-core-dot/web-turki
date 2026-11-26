@@ -40,6 +40,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       error,
       menuPlacement = "bottom",
       id,
+      required,
       disabled,
       className,
     },
@@ -66,6 +67,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             className="block text-sm font-medium text-foreground"
           >
             {label}
+            {required && <span className="ml-0.5 text-danger-500">*</span>}
           </label>
         )}
         <div className="relative">
