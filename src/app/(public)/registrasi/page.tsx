@@ -18,7 +18,7 @@ const initialForm: FormState = { fullName: "", birthPlace: "", birthDate: "", ge
 
 export default function RegistrasiPage() {
   const [step, setStep] = useState(0); const [submitted, setSubmitted] = useState(false); const [submitting, setSubmitting] = useState(false); const [submitError, setSubmitError] = useState(""); const [nikError, setNikError] = useState(""); const [form, setForm] = useState<FormState>(initialForm);
-  const update = (key: string, value: string, type?: string) => { const normalized = key === "nik" ? value.replace(/\D/g, "").slice(0, 16) : type === "email" ? value.toLowerCase() : type === "number" || type === "date" ? value : value.toUpperCase(); setForm((current) => ({ ...current, [key]: normalized })); if (key === "nik") setNikError(""); };
+  const update = (key: string, value: string, type?: string) => { const normalized = key === "nik" || key === "phone" || key === "parentPhone" ? value.replace(/\D/g, "") : type === "email" ? value.toLowerCase() : type === "number" || type === "date" ? value : value.toUpperCase(); setForm((current) => ({ ...current, [key]: normalized })); if (key === "nik") setNikError(""); };
   const updateMajor = (index: number, value: string) => setForm((current) => ({ ...current, majors: current.majors.map((major, i) => i === index ? value : major) }));
   const isDuplicateNik = existingNiks.includes(String(form.nik).trim());
   const isNikComplete = String(form.nik).length === 16;
