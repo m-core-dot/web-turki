@@ -15,7 +15,7 @@ export async function submitRegistration(input: unknown) {
 
   const { data, error } = await createRegistration(parsed.data);
   if (error) {
-    if (error.code === "23505") return { ok: false as const, message: "NIK atau nomor registrasi sudah terdaftar." };
+    if (error.code === "23505" || error.code === "NIK_ACTIVE") return { ok: false as const, message: "NIK sudah terdaftar pada registrasi yang masih menunggu review atau sudah disetujui." };
     console.error("Failed to create registration", error);
     return { ok: false as const, message: "Registrasi gagal disimpan. Coba lagi." };
   }

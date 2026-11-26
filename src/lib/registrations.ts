@@ -41,6 +41,16 @@ export async function listRegistrations() {
 export async function createRegistration(input: RegistrationInput) {
   const parsed = registrationInputSchema.parse(input);
   const values = parsed.values;
+  const nik = values.nik.trim();
+  const existing = await getSupabaseAdminClient()
+    .from("registrations")
+    .select("status")
+    .eq("nik", nik)
+    .neq("status", "rejected")
+    .maybeSingle();
+  if (existing.error) return { data: null, error: existing.error };
+  if (existing.data) return { data: null, error: { code: "NIK_ACTIVE", message: "NIK sudah terdaftar pada registrasi aktif." } };
+
   const preferences = ["One", "Two", "Three", "Four", "Five"]
     .map((suffix) => values[`preference${suffix}`]?.trim())
     .filter((value): value is string => Boolean(value));
