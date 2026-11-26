@@ -9,10 +9,12 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 
-export default function DocumentDetailPage({ params }: { params: { documentId: string } }) {
+export default function DocumentDetailPage({ params }: { params: Promise<{ documentId: string }> }) {
   const [document, setDocument] = useState<Awaited<ReturnType<typeof getAdminDocumentDetail>>["data"]>(null);
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => { getAdminDocumentDetail(params.documentId).then((result) => { setDocument(result.data); setError(result.error); }); }, [params.documentId]);
+  useEffect(() => {
+    params.then(({ documentId }) => getAdminDocumentDetail(documentId)).then((result) => { setDocument(result.data); setError(result.error); });
+  }, [params]);
   if (error) return <div className="space-y-6"><Link href="/admin/dokumen" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"><ArrowLeft className="h-4 w-4" />Kembali ke dokumen</Link><Card><p className="text-sm text-danger-600">{error}</p></Card></div>;
   if (!document) return <div className="space-y-6"><PageHeader title="Detail Dokumen" description="Memuat data dokumen..." /><Card><p className="text-sm text-muted">Memuat...</p></Card></div>;
   const status = document.status === "revision" ? "needs_revision" : document.status;
