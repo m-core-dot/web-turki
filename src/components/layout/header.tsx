@@ -135,15 +135,24 @@ export function Header({ onMenuClick }: HeaderProps) {
       setProfileOpen(false);
       toast({ title: "Profil diperbarui", description: "Data pribadi berhasil disimpan.", variant: "success" });
     }}>Simpan</Button></>}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Nama lengkap" value={profileName} onChange={(event) => setProfileName(event.target.value)} />
-        <Input label="Email login" type="email" value={profileEmail} readOnly />
-        <Input label="Jenis kelamin" value={profileGender} onChange={(event) => setProfileGender(event.target.value)} />
-        <Input label="Nomor telepon" value={profilePhone} onChange={(event) => setProfilePhone(event.target.value)} />
-        <Input label="Departemen" value={profileRole} readOnly />
-        <Input label="Role" value={profileJobRole} readOnly />
-        <Input label="Status" value={profileStatus === "active" ? "Aktif" : "Nonaktif"} readOnly />
-        <Input label="Alamat" value={profileAddress} onChange={(event) => setProfileAddress(event.target.value)} />
+      <div className="space-y-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="Nama lengkap" value={profileName} onChange={(event) => setProfileName(event.target.value)} />
+          <Input label="Jenis kelamin" value={profileGender} onChange={(event) => setProfileGender(event.target.value)} />
+          <Input label="Email login" type="email" value={profileEmail} readOnly />
+          <Input label="Nomor telepon" value={profilePhone} onChange={(event) => setProfilePhone(event.target.value)} />
+          <div className="sm:col-span-2">
+            <Input label="Alamat" value={profileAddress} onChange={(event) => setProfileAddress(event.target.value)} />
+          </div>
+        </div>
+        <div className="border-t border-border pt-5">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Informasi pekerjaan</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="Departemen" value={profileRole} readOnly />
+            <Input label="Role" value={profileJobRole} readOnly />
+            <Input label="Status" value={profileStatus === "active" ? "Aktif" : "Nonaktif"} readOnly />
+          </div>
+        </div>
       </div>
     </Dialog>
     </>
