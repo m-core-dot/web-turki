@@ -9,6 +9,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getCurrentStaffProfile } from "./header-actions";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -23,28 +24,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [profileRole, setProfileRole] = useState("—");
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Fetch logged-in user data
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setProfileEmail(user.email ?? "—");
-
-      const { data: staff } = await supabase
-        .from("staff")
-        .select("name, department")
-        .eq("auth_user_id", user.id)
-        .single();
-
-      if (staff) {
-        setProfileName(staff.name || user.email?.split("@")[0] || "—");
-        setProfileRole(staff.department || "Staff");
-      } else {
-        setProfileName(user.email?.split("@")[0] ?? "—");
-        setProfileRole("User");
-      }
-    })();
+    void getCurrentStaffProfile().then((profile) => {
+      if (!profile) return;
+      setProfileName(profile.name);
+      setProfileEmail(profile.email);
+      setProfileRole(profile.department);
+    });
   }, []);
 
   useEffect(() => {
