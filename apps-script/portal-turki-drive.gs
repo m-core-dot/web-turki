@@ -7,6 +7,11 @@ function doPost(e) {
   try {
     const request = JSON.parse(e.postData.contents || '{}');
     if (request.token !== CONFIG.token) return json({ ok: false, message: 'Unauthorized' });
+    if (request.operation === 'make_public' && request.fileId) {
+      const existingFile = DriveApp.getFileById(request.fileId);
+      existingFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      return json({ ok: true, fileId: existingFile.getId() });
+    }
     if (!request.registrationNumber || !request.studentName || !request.batch || !request.fileName || !request.base64) {
       return json({ ok: false, message: 'Required fields are missing' });
     }

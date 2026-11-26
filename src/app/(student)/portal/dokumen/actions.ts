@@ -30,6 +30,15 @@ async function getRegistration() {
   return data;
 }
 
+export async function makeDocumentPublic(fileId: string) {
+  const appsScriptUrl = process.env.GOOGLE_DRIVE_APPS_SCRIPT_URL;
+  const token = process.env.GOOGLE_DRIVE_APPS_SCRIPT_TOKEN;
+  if (!appsScriptUrl || !token) return { error: "Integrasi Google Drive belum dikonfigurasi di server." };
+  const response = await fetch(appsScriptUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, operation: "make_public", fileId }), cache: "no-store" });
+  const result = await response.json() as { ok?: boolean; message?: string };
+  return !response.ok || !result.ok ? { error: result.message || "Akses file gagal diperbarui." } : { error: null };
+}
+
 export async function getDocuments() {
   const registration = await getRegistration();
   if (!registration) return { data: [], error: "Sesi peserta tidak ditemukan." };
