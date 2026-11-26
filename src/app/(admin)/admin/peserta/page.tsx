@@ -39,7 +39,7 @@ export default function PesertaPage() {
         registration: String(item.batch),
         completeness: completeness[item.registration_number] ?? 0,
         applications: 0,
-        status: (completeness[item.registration_number] ?? 0) === 50 ? "active" : "incomplete",
+        status: (completeness[item.registration_number] ?? 0) === 100 ? "active" : "incomplete",
       })));
     });
   }, []);

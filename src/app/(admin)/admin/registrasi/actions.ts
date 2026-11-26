@@ -61,19 +61,45 @@ export async function updateRegistrationStatus(registrationNumber: string, statu
   return { ok: true as const };
 }
 
+const participantDataFields = [
+  "full_name", "email", "whatsapp_phone", "birth_place", "birth_date", "gender", "passport_number", "nik", "telegram_username",
+  "father_name", "father_phone", "mother_name", "mother_phone", "address", "rt_rw", "village", "district", "regency", "province", "postal_code",
+  "school", "school_city", "school_province", "major", "program_level", "source", "preferences",
+] as const;
+
+function hasValue(value: unknown) {
+  return Array.isArray(value) ? value.length > 0 : Boolean(String(value ?? "").trim());
+}
+
 export async function fetchParticipantCompleteness(registrationNumbers: string[]) {
   if (registrationNumbers.length === 0) return { ok: true as const, data: {} as Record<string, number> };
-  const { data, error } = await getSupabaseAdminClient()
-    .from("participant_documents")
-    .select("registration_number, file_name")
-    .in("registration_number", registrationNumbers);
-  if (error) return { ok: false as const, message: error.message };
+  const supabase = getSupabaseAdminClient();
+  const [{ data: registrations, error: registrationError }, { data: documents, error: documentError }] = await Promise.all([
+    supabase.from("registrations").select("*").in("registration_number", registrationNumbers),
+    supabase.from("participant_documents").select("registration_number, document_type, file_name").in("registration_number", registrationNumbers),
+  ]);
+  if (registrationError) return { ok: false as const, message: registrationError.message };
+  if (documentError) return { ok: false as const, message: documentError.message };
+
   const requiredDocuments = 7;
-  const counts = (data ?? []).reduce<Record<string, number>>((result, document) => {
-    if (document.file_name) result[document.registration_number] = (result[document.registration_number] ?? 0) + 1;
+  const documentCounts = (documents ?? []).reduce<Record<string, Set<string>>>((result, document) => {
+    if (document.file_name) (result[document.registration_number] ??= new Set()).add(document.document_type);
     return result;
   }, {});
-  return { ok: true as const, data: Object.fromEntries(registrationNumbers.map((number) => [number, Math.round(((counts[number] ?? 0) / requiredDocuments) * 50)])) };
+  const registrationMap = new Map((registrations ?? []).map((registration) => [registration.registration_number, registration]));
+  return {
+    ok: true as const,
+    data: Object.fromEntries(registrationNumbers.map((number) => {
+      const registration = registrationMap.get(number);
+      const participantCount = participantDataFields.filter((field) => hasValue(registration?.[field])).length;
+      const documentTypes = documentCounts[number] ?? new Set<string>();
+      const proofUploaded = Boolean(registration?.proof_file_name || registration?.proof_drive_file_id || registration?.proof_drive_url || registration?.proof_storage_path);
+      if (proofUploaded) documentTypes.add("Bukti pendaftaran");
+      const documentScore = Math.round((Math.min(documentTypes.size, requiredDocuments) / requiredDocuments) * 50);
+      const participantScore = Math.round((participantCount / participantDataFields.length) * 50);
+      return [number, documentScore + participantScore];
+    })),
+  };
 }
 
 export async function fetchRegistrations() {
