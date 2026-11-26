@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AuthLoading } from "@/components/shared/auth-loading";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -19,6 +19,14 @@ async function AdminContent({ children }: { children: React.ReactNode }) {
   ]);
   const { data: { user } } = userResult;
   if (!user) redirect(`/login?next=${encodeURIComponent("/admin")}`);
+
+  const { data: staff } = await getSupabaseAdminClient()
+    .from("staff")
+    .select("id, status")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (!staff || staff.status !== "active") redirect("/portal");
+
   return <AdminShell>{children}</AdminShell>;
 }
 
