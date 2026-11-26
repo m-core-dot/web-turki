@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AdminTablePage } from "@/components/shared/admin-table-page";
 import { AdminActionMenu } from "@/components/shared/admin-action-menu";
-import { fetchRegistrations } from "../registrasi/actions";
+import { fetchParticipantCompleteness, fetchRegistrations } from "../registrasi/actions";
 
 type Participant = {
   id: string;
@@ -24,19 +24,22 @@ export default function PesertaPage() {
   const [description, setDescription] = useState("Daftar peserta dan kelengkapan profil.");
 
   useEffect(() => {
-    fetchRegistrations().then((result) => {
+    fetchRegistrations().then(async (result) => {
       if (!result.ok) {
         setDescription(result.message);
         return;
       }
-      setData(result.data.filter((item) => item.status === "approved").map((item) => ({
+      const approved = result.data.filter((item) => item.status === "approved");
+      const completenessResult = await fetchParticipantCompleteness(approved.map((item) => item.registration_number));
+      const completeness = completenessResult.ok ? completenessResult.data : {};
+      setData(approved.map((item) => ({
         id: item.registration_number,
         name: item.full_name,
         email: item.email,
         registration: String(item.batch),
-        completeness: 100,
+        completeness: completeness[item.registration_number] ?? 0,
         applications: 0,
-        status: "active", 
+        status: (completeness[item.registration_number] ?? 0) === 50 ? "active" : "incomplete",
       })));
     });
   }, []);

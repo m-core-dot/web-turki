@@ -61,6 +61,21 @@ export async function updateRegistrationStatus(registrationNumber: string, statu
   return { ok: true as const };
 }
 
+export async function fetchParticipantCompleteness(registrationNumbers: string[]) {
+  if (registrationNumbers.length === 0) return { ok: true as const, data: {} as Record<string, number> };
+  const { data, error } = await getSupabaseAdminClient()
+    .from("participant_documents")
+    .select("registration_number, file_name")
+    .in("registration_number", registrationNumbers);
+  if (error) return { ok: false as const, message: error.message };
+  const requiredDocuments = 7;
+  const counts = (data ?? []).reduce<Record<string, number>>((result, document) => {
+    if (document.file_name) result[document.registration_number] = (result[document.registration_number] ?? 0) + 1;
+    return result;
+  }, {});
+  return { ok: true as const, data: Object.fromEntries(registrationNumbers.map((number) => [number, Math.round(((counts[number] ?? 0) / requiredDocuments) * 50)])) };
+}
+
 export async function fetchRegistrations() {
   const { data, error } = await listRegistrations();
   if (error) {
