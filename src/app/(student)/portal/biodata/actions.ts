@@ -35,7 +35,7 @@ export type ParticipantBiodata = {
   status: string;
 };
 
-type EditableBiodata = Omit<ParticipantBiodata, "registration_number" | "program_level" | "full_name" | "email" | "nik" | "batch" | "status" | "school" | "school_city" | "school_province" | "major" | "source" | "preferences"> & { preferences: string[] };
+type EditableBiodata = Omit<ParticipantBiodata, "registration_number" | "program_level" | "batch" | "status" | "school" | "school_city" | "school_province" | "major" | "source" | "preferences"> & { preferences: string[] };
 
 async function getParticipantContext() {
   const { data: { user } } = await (await getSupabaseServerClient()).auth.getUser();
@@ -57,10 +57,14 @@ export async function updateParticipantBiodata(input: EditableBiodata) {
   if (!context) return { error: "Sesi peserta tidak ditemukan." };
   const { preferences, ...fields } = input;
   const admin = getSupabaseAdminClient();
+  const { data: before } = await admin.from("registrations").select("full_name, email, nik, passport_number, birth_place, birth_date, gender, whatsapp_phone, telegram_username, father_name, father_phone, mother_name, mother_phone, address, rt_rw, village, district, regency, province, postal_code, preferences").eq("id", context.registration.id).single();
   const { error } = await admin.from("registrations").update({ ...fields, preferences }).eq("id", context.registration.id);
   if (error) return { error: error.message };
-  const changedFields = Object.keys(fields).filter((field) => fields[field as keyof typeof fields] !== null && fields[field as keyof typeof fields] !== "");
-  const { error: auditError } = await admin.from("audit_logs").insert({ actor_id: context.user.id, actor_name: context.registration.full_name, action: `Memperbarui biodata peserta (${changedFields.join(", ") || "tidak ada perubahan"})`, target: context.registration.registration_number });
+  const fieldLabels: Record<string, string> = { full_name: "Nama lengkap", email: "Email", nik: "NIK", passport_number: "Nomor paspor", birth_place: "Tempat lahir", birth_date: "Tanggal lahir", gender: "Jenis kelamin", whatsapp_phone: "Nomor WhatsApp", telegram_username: "Telegram", father_name: "Nama ayah", father_phone: "Telepon ayah", mother_name: "Nama ibu", mother_phone: "Telepon ibu", address: "Alamat lengkap", rt_rw: "RT/RW", village: "Kelurahan/Desa", district: "Kecamatan", regency: "Kota/Kabupaten", province: "Provinsi", postal_code: "Kode pos", preferences: "Pilihan jurusan" };
+  const formatAuditValue = (value: unknown) => Array.isArray(value) ? value.join(", ") || "Belum diisi" : value === null || value === "" || value === undefined ? "Belum diisi" : String(value);
+  const changedFields = Object.keys({ ...fields, preferences }).filter((field) => formatAuditValue(before?.[field as keyof typeof before]) !== formatAuditValue(({ ...fields, preferences })[field as keyof typeof fields]));
+  const detail = changedFields.map((field) => `${fieldLabels[field] ?? field}: "${formatAuditValue(before?.[field as keyof typeof before])}" → "${formatAuditValue(({ ...fields, preferences })[field as keyof typeof fields])}"`).join("; ");
+  const { error: auditError } = await admin.from("audit_logs").insert({ actor_id: context.user.id, actor_name: context.registration.full_name, action: `Memperbarui biodata peserta: ${detail || "tidak ada perubahan"}`, target: context.registration.registration_number });
   if (auditError) return { error: `Biodata tersimpan, tetapi audit log gagal dibuat: ${auditError.message}` };
   return { error: null };
 }
