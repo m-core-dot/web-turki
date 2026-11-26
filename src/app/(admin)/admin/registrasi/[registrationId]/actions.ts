@@ -1,6 +1,21 @@
 "use server";
 
-import { getSupabaseAdminClient, defaultPassword } from "@/lib/supabase/server";
+import { getSupabaseAdminClient, getSupabaseServerClient, defaultPassword } from "@/lib/supabase/server";
+
+async function writeAuditLog(action: string, target: string) {
+  const admin = getSupabaseAdminClient();
+  const server = await getSupabaseServerClient();
+  const { data: { user } } = await server.auth.getUser();
+  if (!user) return;
+
+  const { data: staff } = await admin.from("staff").select("name").eq("auth_user_id", user.id).maybeSingle();
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_name: staff?.name || user.email || "Unknown user",
+    action,
+    target,
+  });
+}
 
 export async function fetchRegistration(id: string) {
   const { data, error } = await getSupabaseAdminClient()
@@ -125,6 +140,7 @@ export async function approveRegistration(registrationNumber: string) {
     return { ok: false as const, message: `Status registrasi gagal diperbarui: ${updateError.message}` };
   }
 
+  await writeAuditLog("Menyetujui registrasi", registrationNumber);
   return { ok: true as const, login: email, temporaryPassword: defaultPassword, nik: registration.nik };
 }
 

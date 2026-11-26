@@ -10,6 +10,9 @@ create table if not exists public.audit_logs (
 create index if not exists audit_logs_created_at_idx on public.audit_logs (created_at desc);
 create index if not exists audit_logs_actor_name_idx on public.audit_logs (actor_name);
 
+grant select, insert, update, delete on table public.audit_logs to service_role;
+grant select on table public.audit_logs to authenticated;
+
 alter table public.audit_logs enable row level security;
 
 drop policy if exists "Authenticated users can read audit logs" on public.audit_logs;
