@@ -19,7 +19,7 @@ export default function DokumenPage() {
     { key: "version", label: "Versi", render: (item) => <span className="rounded bg-background-alt px-2 py-1 text-xs">{item.version}</span> },
     { key: "date", label: "Diunggah", render: (item) => <span className="text-muted">{item.uploadedAt}</span> },
     { key: "status", label: "Status", render: (item) => <StatusBadge status={item.status} /> },
-    { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/dokumen/${item.id}`} approveLabel="Setujui Dokumen" readOnly={item.status === "approved"} /> },
+    { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/dokumen/${item.id}`} detailLabel="Detail Dokumen" approveLabel="Setujui" readOnly={item.status === "approved"} onRequestRevision={() => undefined} /> },
   ]} />;
 }
 
