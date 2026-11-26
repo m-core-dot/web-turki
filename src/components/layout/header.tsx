@@ -1,23 +1,51 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Menu, Search, Bell, ChevronDown, LogOut, UserRound } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [profileName, setProfileName] = useState("Admin MTAS");
-  const [profileEmail, setProfileEmail] = useState("admin@mumtaza.center");
+  const [profileName, setProfileName] = useState("—");
+  const [profileEmail, setProfileEmail] = useState("—");
+  const [profileRole, setProfileRole] = useState("—");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Fetch logged-in user data
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setProfileEmail(user.email ?? "—");
+
+      const { data: staff } = await supabase
+        .from("staff")
+        .select("full_name, role")
+        .eq("auth_user_id", user.id)
+        .single();
+
+      if (staff) {
+        setProfileName(staff.full_name || user.email || "—");
+        setProfileRole(staff.role || "Staff");
+      } else {
+        setProfileName(user.email ?? "—");
+        setProfileRole("User");
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -39,10 +67,13 @@ export function Header({ onMenuClick }: HeaderProps) {
     };
   }, [menuOpen]);
 
-  const logout = () => {
+  const logout = useCallback(async () => {
     setMenuOpen(false);
-    toast({ title: "Keluar dari akun", description: "Sesi preview ditutup.", variant: "success" });
-  };
+    await getSupabaseBrowserClient().auth.signOut();
+    toast({ title: "Berhasil keluar", description: "Anda telah keluar dari akun.", variant: "success" });
+    router.replace("/login");
+    router.refresh();
+  }, [router]);
 
   return (
     <>
@@ -86,7 +117,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Avatar name={profileName} size="sm" />
               <div className="hidden text-left md:block">
                 <p className="text-sm font-medium text-foreground">{profileName}</p>
-                <p className="text-xs text-muted">Super Admin</p>
+                <p className="text-xs text-muted">{profileRole}</p>
               </div>
               <ChevronDown className="hidden h-4 w-4 text-muted md:block" />
             </button>
