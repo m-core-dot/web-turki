@@ -9,13 +9,18 @@ export async function getCurrentStaffProfile() {
 
   const { data: staff } = await getSupabaseAdminClient()
     .from("staff")
-    .select("name, department")
+    .select("name, email, gender, phone, address, department, role, status")
     .eq("auth_user_id", user.id)
     .maybeSingle();
 
   return {
     name: staff?.name || user.email?.split("@")[0] || "—",
-    email: user.email || "—",
+    email: user.email || staff?.email || "—",
+    gender: staff?.gender || "",
+    phone: staff?.phone || "",
+    address: staff?.address || "",
     department: staff?.department || "User",
+    role: staff?.role || "",
+    status: staff?.status || "active",
   };
 }

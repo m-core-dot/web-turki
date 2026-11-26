@@ -22,6 +22,11 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [profileName, setProfileName] = useState("—");
   const [profileEmail, setProfileEmail] = useState("—");
   const [profileRole, setProfileRole] = useState("—");
+  const [profileGender, setProfileGender] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileAddress, setProfileAddress] = useState("");
+  const [profileJobRole, setProfileJobRole] = useState("");
+  const [profileStatus, setProfileStatus] = useState("active");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +35,11 @@ export function Header({ onMenuClick }: HeaderProps) {
       setProfileName(profile.name);
       setProfileEmail(profile.email);
       setProfileRole(profile.department);
+      setProfileGender(profile.gender);
+      setProfilePhone(profile.phone);
+      setProfileAddress(profile.address);
+      setProfileJobRole(profile.role);
+      setProfileStatus(profile.status);
     });
   }, []);
 
@@ -116,8 +126,17 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
     </header>
-    <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit profile" description="Perbarui informasi akun admin preview." footer={<><Button variant="outline" onClick={() => setProfileOpen(false)}>Batal</Button><Button onClick={() => { setProfileOpen(false); toast({ title: "Profil diperbarui", variant: "success" }); }}>Simpan</Button></>}>
-      <div className="space-y-4"><Input label="Nama lengkap" value={profileName} onChange={(event) => setProfileName(event.target.value)} /><Input label="Email" type="email" value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} /></div>
+    <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit profile" description="Data profil yang tersimpan pada halaman Staff." footer={<><Button variant="outline" onClick={() => setProfileOpen(false)}>Tutup</Button></>}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Input label="Nama lengkap" value={profileName} readOnly />
+        <Input label="Email login" type="email" value={profileEmail} readOnly />
+        <Input label="Jenis kelamin" value={profileGender} readOnly />
+        <Input label="Nomor telepon" value={profilePhone} readOnly />
+        <Input label="Departemen" value={profileRole} readOnly />
+        <Input label="Role" value={profileJobRole} readOnly />
+        <Input label="Status" value={profileStatus === "active" ? "Aktif" : "Nonaktif"} readOnly />
+        <Input label="Alamat" value={profileAddress} readOnly />
+      </div>
     </Dialog>
     </>
   );
