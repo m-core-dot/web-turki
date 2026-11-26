@@ -52,7 +52,7 @@ export default function RegistrationDetailPage() {
           const existingProofUrl = result.data.proof_drive_url || result.data.proof_storage_path;
           if (existingProofUrl) {
             setProofUrlLoading(true);
-            getRegistrationProofUrl(String(existingProofUrl)).then((proofResult) => {
+            getRegistrationProofUrl(String(existingProofUrl), String(result.data.proof_file_name ?? "")).then((proofResult) => {
               if (proofResult.ok) setProofUrl(proofResult.url);
               setProofUrlLoading(false);
             });

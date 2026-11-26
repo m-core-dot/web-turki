@@ -37,10 +37,11 @@ function getDriveFileId(value: string) {
   return match?.[1] || value;
 }
 
-export async function getRegistrationProofUrl(fileUrl: string) {
+export async function getRegistrationProofUrl(fileUrl: string, fileName?: string) {
   if (!fileUrl) return { ok: false as const, message: "Bukti pendaftaran tidak tersedia." };
   const fileId = getDriveFileId(fileUrl);
-  return { ok: true as const, url: `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1200` };
+  const isPdf = fileName?.toLowerCase().endsWith(".pdf");
+  return { ok: true as const, url: isPdf ? `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview` : `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1200` };
 }
 
 export async function uploadRegistrationProof(registrationNumber: string, formData: FormData) {
