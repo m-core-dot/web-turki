@@ -42,7 +42,7 @@ export async function submitPublicRegistration(values: Record<string, string | s
       motherName: String(values.motherName ?? ""),
       motherPhone: String(values.parentPhone ?? ""),
       address: String(values.address ?? ""),
-      rtRw: `${String(values.rt ?? "").trim() || "-"}/${String(values.rw ?? "").trim() || "-"}`, 
+      rtRw: `${String(values.rt ?? "").trim() || "-"}/${String(values.rw ?? "").trim() || "-"}`,
       village: String(values.village ?? ""),
       district: String(values.district ?? ""),
       regency: String(values.regency ?? ""),
