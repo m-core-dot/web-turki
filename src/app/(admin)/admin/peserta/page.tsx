@@ -46,7 +46,7 @@ export default function PesertaPage() {
     { key: "complete", label: "Kelengkapan", render: (item) => <div className="flex items-center gap-2"><div className="h-1.5 w-20 rounded-full bg-background-alt"><div className="h-1.5 rounded-full bg-primary-600" style={{ width: `${item.completeness}%` }} /></div><span className="text-xs tabular-nums text-muted">{item.completeness}%</span></div> },
     { key: "apps", label: "Aplikasi", render: (item) => <span>{item.applications}</span> },
     { key: "status", label: "Status", render: (item) => <Badge variant={item.status === "active" ? "success" : "warning"} dot>{item.status === "active" ? "Aktif" : "Belum Lengkap"}</Badge> },
-    { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/peserta/${item.id}`} /> },
+    { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/peserta/${item.id}`} readOnly /> },
   ]} />;
 }
 

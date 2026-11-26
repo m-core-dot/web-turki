@@ -9,10 +9,10 @@ export default function AdminDashboardPage() {
       {/* Welcome section */}
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-          Selamat Datang, Admin ðŸ‘‹
+          Selamat Datang, Admin 👋
         </h1>
         <p className="mt-1 text-sm text-muted">
-          Berikut ringkasan aktivitas MTAS hari ini â€” 24 November 2026
+          Berikut ringkasan aktivitas MTAS hari ini — 24 November 2026
         </p>
       </div>
 
@@ -21,12 +21,12 @@ export default function AdminDashboardPage() {
 
       {/* Main grid */}
       <div className="grid gap-6 lg:grid-cols-5">
-        {/* Recent registrations â€” wider */}
+        {/* Recent registrations — wider */}
         <div className="lg:col-span-3">
           <RecentRegistrations />
         </div>
 
-        {/* Recent activities â€” narrower */}
+        {/* Recent activities — narrower */}
         <div className="lg:col-span-2">
           <RecentActivities />
         </div>

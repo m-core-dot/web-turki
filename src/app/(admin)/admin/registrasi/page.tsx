@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Download, FileUp, UserPlus } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import { AdminTablePage } from "@/components/shared/admin-table-page";
 import { AdminActionMenu } from "@/components/shared/admin-action-menu";
 import { NewRegistrationDialog } from "@/components/admin/new-registration-dialog";
 import { toast } from "@/components/ui/toast";
-import { fetchRegistrations, importRegistrations, validateRegistrations } from "./actions";
+import { fetchRegistrations, importRegistrations, updateRegistrationStatus, validateRegistrations } from "./actions";
 
 type RegistrationRow = {
   id: string;
@@ -24,6 +25,7 @@ type RegistrationRow = {
 };
 
 export default function RegistrasiPage() {
+  const router = useRouter();
   const importRef = useRef<HTMLInputElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [data, setData] = useState<RegistrationRow[]>([]);
@@ -71,6 +73,11 @@ export default function RegistrasiPage() {
       }
     });
   }, []);
+  const refreshRegistrations = async () => {
+    const result = await fetchRegistrations();
+    if (result.ok) setData(result.data.map((item) => ({ id: item.registration_number, name: item.full_name, email: item.email, phone: item.whatsapp_phone, batch: String(item.batch), submittedAt: new Date(item.submitted_at).toLocaleDateString("id-ID"), status: item.status as RegistrationRow["status"] })));
+    else setLoadError(result.message);
+  };
   const confirmImport = async () => {
     const validRows = previewRows.filter((row) => row.valid);
     const result = await importRegistrations(validRows.map((row) => row.input));
@@ -87,7 +94,7 @@ export default function RegistrasiPage() {
     { key: "batch", label: "Angkatan", render: (item) => <span>{item.batch}</span> },
     { key: "date", label: "Tanggal", render: (item) => <span className="text-muted">{item.submittedAt}</span> },
     { key: "status", label: "Status", render: (item) => <StatusBadge status={item.status} /> },
-    { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/registrasi/${item.id}`} approveLabel="Setujui Registrasi" /> },
+    { key: "actions", label: "", className: "w-12 text-right", render: (item) => <AdminActionMenu viewHref={`/admin/registrasi/${item.id}`} approveLabel="Setujui Registrasi" readOnly={item.status === "approved"} onEdit={() => router.push(`/admin/registrasi/${item.id}?edit=1`)} onConfirmAction={async (action) => { const result = await updateRegistrationStatus(item.id, action === "approve" ? "approved" : "rejected"); if (!result.ok) { toast({ title: "Aksi gagal", description: result.message, variant: "warning" }); return; } toast({ title: action === "approve" ? "Registrasi disetujui" : "Registrasi ditolak", description: "Status berhasil diperbarui di Supabase.", variant: action === "approve" ? "success" : "warning" }); await refreshRegistrations(); }} /> },
   ]} /><NewRegistrationDialog open={dialogOpen} onClose={() => setDialogOpen(false)} /><Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} title="Preview Import XLSX" description="Periksa baris valid dan kesalahan sebelum menyimpan ke database." size="lg" footer={<><Button variant="outline" onClick={() => setPreviewOpen(false)}>Batal</Button><Button onClick={confirmImport} disabled={!previewRows.some((row) => row.valid)}>Import Baris Valid</Button></>}><div className="space-y-3"><p className="text-sm text-muted">{previewRows.filter((row) => row.valid).length} baris valid, {previewRows.filter((row) => !row.valid).length} baris perlu diperbaiki.</p><div className="max-h-96 space-y-2 overflow-y-auto">{previewRows.map((row) => <div key={row.row} className={`rounded-lg border p-3 text-sm ${row.valid ? "border-success-200 bg-success-50" : "border-danger-200 bg-danger-50"}`}><p className="font-medium">Baris {row.row}: {row.valid ? "Valid" : "Tidak valid"}</p>{!row.valid && <ul className="mt-1 list-disc pl-5 text-danger-700">{row.errors.map((error) => <li key={error}>{error}</li>)}</ul>}</div>)}</div></div></Dialog></>;
 }
 

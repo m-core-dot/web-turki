@@ -1,6 +1,7 @@
 "use server";
 
 import { createRegistration, listRegistrations, registrationInputSchema } from "@/lib/registrations";
+import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 function getDatabaseErrorMessage(error: { code?: string; message?: string } | null) {
   if (error?.code === "22008") return "Format tanggal lahir tidak valid. Gunakan format YYYY-MM-DD atau DD/MM/YYYY.";
@@ -44,6 +45,20 @@ export async function importRegistrations(inputs: unknown[]) {
     else errors.push({ row: index + 2, messages: [getDatabaseErrorMessage(result.error)] });
   }
   return { ok: true as const, count: results.length, errors };
+}
+
+export async function updateRegistrationStatus(registrationNumber: string, status: "approved" | "rejected") {
+  const { error } = await getSupabaseAdminClient()
+    .from("registrations")
+    .update({ status })
+    .eq("registration_number", registrationNumber);
+
+  if (error) {
+    console.error("Failed to update registration status", error);
+    return { ok: false as const, message: "Status registrasi gagal diperbarui." };
+  }
+
+  return { ok: true as const };
 }
 
 export async function fetchRegistrations() {
