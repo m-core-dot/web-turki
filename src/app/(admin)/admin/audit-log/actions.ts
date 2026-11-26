@@ -8,7 +8,7 @@ export type AuditLog = {
   action: string;
   target: string;
   createdAt: string;
-  metadata: { type?: string; changes?: Array<{ field: string; label: string; before: string; after: string }> };
+  metadata: { type?: string; changes?: Array<{ field: string; label: string; before: string; after: string }>; revision_note?: string | null; document_type?: string; status?: string };
 };
 
 export async function fetchAuditLogs() {
