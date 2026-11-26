@@ -127,7 +127,7 @@ export async function uploadParticipantDocument(registrationNumber: string, docu
 
 export async function approveRegistration(registrationNumber: string) {
   const supabase = getSupabaseAdminClient();
-  const { data: registration, error: lookupError } = await supabase.from("registrations").select("id, email, nik, status, proof_file_name, proof_drive_file_id, proof_drive_url, proof_storage_path").eq("registration_number", registrationNumber).single();
+  const { data: registration, error: lookupError } = await supabase.from("registrations").select("id, email, nik, status, full_name, batch, proof_file_name, proof_drive_file_id, proof_drive_url, proof_storage_path").eq("registration_number", registrationNumber).single();
   if (lookupError || !registration) return { ok: false as const, message: "Registrasi tidak ditemukan." };
   if (registration.status === "approved") return { ok: false as const, message: "Registrasi sudah disetujui sebelumnya." };
   if (!registration.proof_file_name && !registration.proof_drive_file_id && !registration.proof_drive_url && !registration.proof_storage_path) {
@@ -139,6 +139,19 @@ export async function approveRegistration(registrationNumber: string) {
   if (authError && authError.message.toLowerCase().includes("already been registered")) return { ok: false as const, message: "Email peserta sudah memiliki akun portal." };
   if (authError || !authUser.user) return { ok: false as const, message: authError?.message || "Akun portal gagal dibuat." };
 
+  if (registration.proof_drive_file_id) {
+    const appsScriptUrl = process.env.GOOGLE_DRIVE_APPS_SCRIPT_URL;
+    const token = process.env.GOOGLE_DRIVE_APPS_SCRIPT_TOKEN;
+    if (appsScriptUrl && token) {
+      const moveResponse = await fetch(appsScriptUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, operation: "move_file", fileId: registration.proof_drive_file_id, targetRegistrationNumber: registrationNumber, targetStudentName: registration.full_name, batch: registration.batch, category: "bukti_pembayaran", fileName: registration.proof_file_name }), cache: "no-store" });
+      const moveResult = await moveResponse.json() as { ok?: boolean; message?: string; fileId?: string; webViewLink?: string };
+      if (!moveResponse.ok || !moveResult.ok) {
+        await supabase.auth.admin.deleteUser(authUser.user.id);
+        return { ok: false as const, message: moveResult.message || "Bukti pembayaran gagal dipindahkan ke folder peserta." };
+      }
+      await supabase.from("registrations").update({ proof_drive_file_id: moveResult.fileId, proof_drive_url: moveResult.webViewLink, proof_storage_path: moveResult.webViewLink }).eq("id", registration.id);
+    }
+  }
   const { error: updateError } = await supabase.from("registrations").update({ status: "approved", auth_user_id: authUser.user.id, must_change_password: true }).eq("id", registration.id);
   if (updateError) {
     await supabase.auth.admin.deleteUser(authUser.user.id);

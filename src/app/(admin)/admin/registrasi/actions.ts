@@ -48,6 +48,12 @@ export async function importRegistrations(inputs: unknown[]) {
 }
 
 export async function updateRegistrationStatus(registrationNumber: string, status: "approved" | "rejected") {
+  if (status === "approved") {
+    const { approveRegistration } = await import("./[registrationId]/actions");
+    const result = await approveRegistration(registrationNumber);
+    if (!result.ok) return result;
+    return { ok: true as const };
+  }
   const { error } = await getSupabaseAdminClient()
     .from("registrations")
     .update({ status })

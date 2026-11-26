@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   },
   description:
     "Platform manajemen pendaftaran mahasiswa Indonesia ke universitas di Turki oleh Mumtaza Center",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

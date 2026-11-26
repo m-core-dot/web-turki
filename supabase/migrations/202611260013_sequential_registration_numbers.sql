@@ -6,7 +6,9 @@ create table if not exists public.registration_number_counters (
 alter table public.registration_number_counters enable row level security;
 grant select, insert, update on table public.registration_number_counters to service_role;
 
-create or replace function public.next_registration_number(registration_year integer)
+drop function if exists public.next_registration_number(integer);
+
+create or replace function public.next_registration_number(p_registration_year integer)
 returns text
 language plpgsql
 security definer
@@ -16,12 +18,12 @@ declare
   next_number integer;
 begin
   insert into public.registration_number_counters (registration_year, last_number)
-  values (registration_year, 1)
+  values (p_registration_year, 1)
   on conflict (registration_year)
-  do update set last_number = public.registration_number_counters.last_number + 1
-  returning last_number into next_number;
+  do update set last_number = registration_number_counters.last_number + 1
+  returning registration_number_counters.last_number into next_number;
 
-  return format('REG-%s-%s', registration_year, lpad(next_number::text, 5, '0'));
+  return format('REG-%s-%s', p_registration_year, lpad(next_number::text, 5, '0'));
 end;
 $$;
 
