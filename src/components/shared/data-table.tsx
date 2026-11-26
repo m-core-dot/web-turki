@@ -34,6 +34,7 @@ interface DataTableProps<T> {
   pageSize?: number;
   searchKeys?: Array<keyof T>;
   emptyMessage?: string;
+  onRowClick?: (item: T) => void;
 }
 
 export function DataTable<T>({
@@ -52,6 +53,7 @@ export function DataTable<T>({
   pageSize = 10,
   searchKeys,
   emptyMessage = "Tidak ada data yang cocok dengan pencarian.",
+  onRowClick,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -160,12 +162,17 @@ export function DataTable<T>({
           <tbody className="divide-y divide-border">
             {paginatedData.length > 0 ? (
               paginatedData.map((item) => (
-                <tr key={keyExtractor(item)} className="transition-colors hover:bg-background-alt/30">
-                  {selectable && <td className="px-5 py-3.5"><input type="checkbox" aria-label={`Pilih ${keyExtractor(item)}`} checked={selectedKeys.includes(keyExtractor(item))} onChange={(event) => setSelectedKeys((current) => event.target.checked ? [...current, keyExtractor(item)] : current.filter((key) => key !== keyExtractor(item)))} /></td>}
+                <tr
+                  key={keyExtractor(item)}
+                  className={cn("transition-colors hover:bg-background-alt/30", onRowClick && "cursor-pointer")}
+                  onClick={() => onRowClick?.(item)}
+                >
+                  {selectable && <td className="px-5 py-3.5" onClick={(event) => event.stopPropagation()}><input type="checkbox" aria-label={`Pilih ${keyExtractor(item)}`} checked={selectedKeys.includes(keyExtractor(item))} onChange={(event) => setSelectedKeys((current) => event.target.checked ? [...current, keyExtractor(item)] : current.filter((key) => key !== keyExtractor(item)))} /></td>}
                   {columns.map((col) => (
                     <td
                       key={col.key}
                       className={cn("px-5 py-3.5", col.className)}
+                      onClick={col.key === "actions" ? (event) => event.stopPropagation() : undefined}
                     >
                       {col.render(item)}
                     </td>

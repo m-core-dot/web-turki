@@ -27,6 +27,7 @@ interface AdminTablePageProps<T> {
   sortable?: boolean;
   exportFilename?: string;
   children?: ReactNode;
+  onRowClick?: (item: T) => void;
 }
 
 export function AdminTablePage<T>({
@@ -46,6 +47,7 @@ export function AdminTablePage<T>({
   sortable,
   exportFilename,
   children,
+  onRowClick,
 }: AdminTablePageProps<T>) {
   return (
     <div className="space-y-6">
@@ -65,6 +67,7 @@ export function AdminTablePage<T>({
           exportable={exportable}
           sortable={sortable}
           exportFilename={exportFilename}
+          onRowClick={onRowClick}
         />
       </Card>
     </div>
