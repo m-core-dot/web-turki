@@ -127,7 +127,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
     </header>
-    <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit profile" description="Perbarui data pribadi Anda. Departemen, role, dan status dikelola melalui halaman Staff." footer={<><Button variant="outline" onClick={() => setProfileOpen(false)}>Batal</Button><Button isLoading={profileSaving} onClick={async () => {
+    <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit profile" footer={<><Button variant="outline" onClick={() => setProfileOpen(false)}>Batal</Button><Button isLoading={profileSaving} onClick={async () => {
       setProfileSaving(true);
       const result = await updateCurrentStaffProfile({ name: profileName, email: profileEmail, gender: profileGender, phone: profilePhone, address: profileAddress, department: profileRole, role: profileJobRole, status: profileStatus });
       setProfileSaving(false);
