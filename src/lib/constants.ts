@@ -25,7 +25,7 @@ export const ADMIN_UNIVERSITY_NAV_ITEMS = [
     href: "/admin/universitas",
     icon: "GraduationCap" as const,
   },
-  { label: "Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
+  { label: "Fakultas dan Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
 ] as const;
 
 export const ADMIN_SYSTEM_NAV_ITEMS = [
