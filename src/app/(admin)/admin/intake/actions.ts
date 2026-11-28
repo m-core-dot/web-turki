@@ -7,6 +7,7 @@ export type IntakeRow = {
   id: string;
   universityId: string;
   university: string;
+  city: string;
   name: string;
   openDate: string;
   closeDate: string;
@@ -26,7 +27,7 @@ function statusForDates(openDate: string, closeDate: string): IntakeStatus {
 export async function fetchIntakes() {
   const supabase = getSupabaseAdminClient();
   const [{ data: universities, error: universityError }, { data: intakes, error: intakeError }] = await Promise.all([
-    supabase.from("universities").select("id, name").eq("status", "active").order("name"),
+    supabase.from("universities").select("id, name, city").eq("status", "active").order("name"),
     supabase.from("intakes").select("id, code, university_id, name, open_date, close_date").order("open_date", { nullsFirst: false }),
   ]);
   if (universityError) return { ok: false as const, message: universityError.message, data: [] as IntakeRow[] };
@@ -45,7 +46,7 @@ export async function fetchIntakes() {
     }
     const openDate = item.open_date ? String(item.open_date) : "";
     const closeDate = item.close_date ? String(item.close_date) : "";
-    return { id: item.code, universityId: item.university_id, university: university.name, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate), isPrimary: false };
+    return { id: item.code, universityId: item.university_id, university: university.name, city: university.city, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate), isPrimary: false };
   }));
 
   const rowsByUniversity = new Set((intakes ?? []).map((item) => item.university_id));
@@ -61,6 +62,7 @@ export async function fetchIntakes() {
       id: `UNIV-${university.id}`,
       universityId: university.id,
       university: university.name,
+            city: university.city,
       name: "Belum ditentukan",
       openDate: "",
       closeDate: "",
