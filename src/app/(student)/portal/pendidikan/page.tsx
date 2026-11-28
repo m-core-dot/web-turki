@@ -201,26 +201,26 @@ export default function PendidikanPage() {
             label="Nama institusi"
             value={form.institution_name}
             onChange={(e) =>
-              setForm({ ...form, institution_name: e.target.value })
+              setForm({ ...form, institution_name: e.target.value.toUpperCase() })
             }
             placeholder="Nama sekolah atau universitas"
           />
           <Input
             label="Kota sekolah"
             value={form.school_city}
-            onChange={(e) => setForm({ ...form, school_city: e.target.value })}
+            onChange={(e) =>             setForm({ ...form, school_city: e.target.value.toUpperCase() })}
             placeholder="Kota atau kabupaten"
           />
           <Input
             label="Provinsi sekolah"
             value={form.school_province}
-            onChange={(e) => setForm({ ...form, school_province: e.target.value })}
+            onChange={(e) =>             setForm({ ...form, school_province: e.target.value.toUpperCase() })}
             placeholder="Provinsi"
           />
           <Input
             label="Jurusan"
             value={form.major}
-            onChange={(e) => setForm({ ...form, major: e.target.value })}
+            onChange={(e) =>             setForm({ ...form, major: e.target.value.toUpperCase() })}
             placeholder="Contoh: IPA"
           />
           <Input
