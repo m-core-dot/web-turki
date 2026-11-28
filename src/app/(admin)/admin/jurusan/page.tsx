@@ -1,22 +1,15 @@
 "use client";
+import { useEffect, useState } from "react";
+import { BookOpen } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { PageHeader } from "@/components/shared/page-header";
+import { Badge } from "@/components/ui/badge";
+import { fetchFacultyMajors, type FacultyMajor } from "./actions";
 
 export default function JurusanPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Fakultas dan Jurusan"
-        description="Kelola program studi berdasarkan fakultas dan universitas."
-      />
-      <DataTable
-        data={[]}
-        keyExtractor={() => "empty"}
-        searchPlaceholder="Cari nama jurusan..."
-        searchable={false}
-        filters={[]}
-        columns={[]}
-      />
-    </div>
-  );
+  const [items, setItems] = useState<FacultyMajor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => { const timer = window.setTimeout(() => { void fetchFacultyMajors().then((result) => { if (result.ok) setItems(result.data); else setError(result.message); setLoading(false); }); }, 0); return () => window.clearTimeout(timer); }, []);
+  return <div className="space-y-6"><PageHeader title="Fakultas dan Jurusan" description="Kelola program studi berdasarkan fakultas dan universitas." />{error && <p className="rounded-lg bg-danger-50 px-4 py-3 text-sm text-danger-700">{error}</p>}{loading ? <p className="py-10 text-center text-sm text-muted">Memuat data fakultas dan jurusan...</p> : <DataTable data={items} keyExtractor={(item) => item.id} searchPlaceholder="Cari nama jurusan..." filters={[]} columns={[{ key: "name", label: "Jurusan", render: (item) => <div className="flex items-center gap-3"><BookOpen className="h-4 w-4 text-primary-700" /><div><p className="font-medium">{item.name}</p><p className="text-xs text-muted">{item.code}</p></div></div> }, { key: "faculty", label: "Fakultas", render: (item) => item.faculty }, { key: "university", label: "Universitas", render: (item) => item.university }, { key: "degree", label: "Jenjang", render: (item) => <Badge variant="outline">{item.degree}</Badge> }, { key: "status", label: "Status", render: (item) => <Badge variant={item.status === "active" ? "success" : "default"} dot>{item.status === "active" ? "Aktif" : "Nonaktif"}</Badge> }]} />}</div>;
 }
