@@ -46,7 +46,7 @@ export async function fetchIntakes() {
     }
     const openDate = item.open_date ? String(item.open_date) : "";
     const closeDate = item.close_date ? String(item.close_date) : "";
-    return { id: item.code, universityId: item.university_id, university: university.name, city: university.city, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate), isPrimary: false };
+    return { id: item.code, universityId: item.university_id, university: university.name, city: university.city, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate), isPrimary: item.name === "Belum ditentukan" };
   }));
 
   const rowsByUniversity = new Set((intakes ?? []).map((item) => item.university_id));
