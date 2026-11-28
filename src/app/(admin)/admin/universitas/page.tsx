@@ -184,6 +184,24 @@ export default function UniversitasPage() {
         title={selected?.name ?? "Detail"}
         description="Informasi universitas dan program akademik yang tersedia."
         size="lg"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setSelected(null)}>
+              Tutup
+            </Button>
+            <Button
+              onClick={() => {
+                if (selected) {
+                  setEditing(selected);
+                  setSelected(null);
+                  setOpen(true);
+                }
+              }}
+            >
+              Edit Universitas
+            </Button>
+          </>
+        }
       >
         <div className="space-y-5">
           {selected && (
@@ -230,22 +248,6 @@ export default function UniversitasPage() {
               </div>
             </>
           )}
-        </div>
-        <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
-          <Button variant="outline" onClick={() => setSelected(null)}>
-            Tutup
-          </Button>
-          <Button
-            onClick={() => {
-              if (selected) {
-                setEditing(selected);
-                setSelected(null);
-                setOpen(true);
-              }
-            }}
-          >
-            Edit Universitas
-          </Button>
         </div>
       </Dialog>
       <MasterCrudDialog
