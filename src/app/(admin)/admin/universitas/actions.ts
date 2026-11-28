@@ -8,15 +8,33 @@ export type University = {
   name: string;
   city: string;
   status: "active" | "inactive";
+  faculties: number;
+  majors: number;
+  intakes: number;
 };
 
 export async function fetchUniversities() {
-  const { data, error } = await getSupabaseAdminClient()
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
     .from("universities")
     .select("id, code, name, city, status")
     .order("name", { ascending: true });
   if (error) return { ok: false as const, message: error.message, data: [] as University[] };
-  return { ok: true as const, data: (data ?? []) as University[] };
+  const universities = await Promise.all((data ?? []).map(async (university) => {
+    const { count: faculties, error: facultyError } = await supabase.from("faculties").select("id", { count: "exact", head: true }).eq("university_id", university.id);
+    if (facultyError) throw new Error(facultyError.message);
+    const { data: facultyRows, error: majorFacultyError } = await supabase.from("faculties").select("id").eq("university_id", university.id);
+    if (majorFacultyError) throw new Error(majorFacultyError.message);
+    const facultyIds = (facultyRows ?? []).map((faculty) => faculty.id);
+    let majors = 0;
+    if (facultyIds.length > 0) {
+      const { count, error: majorError } = await supabase.from("majors").select("id", { count: "exact", head: true }).in("faculty_id", facultyIds);
+      if (majorError) throw new Error(majorError.message);
+      majors = count ?? 0;
+    }
+    return { ...university, faculties: faculties ?? 0, majors, intakes: 0 } as University;
+  }));
+  return { ok: true as const, data: universities };
 }
 
 export async function saveUniversity(values: { id?: string; name: string; city: string; status: "active" | "inactive" }) {

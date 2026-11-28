@@ -137,9 +137,9 @@ export default function UniversitasPage() {
               ),
             },
             { key: "city", label: "Kota", render: (x) => x.city },
-            { key: "faculties", label: "Fakultas", render: () => 0 },
-            { key: "majors", label: "Jurusan", render: () => 0 },
-            { key: "intakes", label: "Intake", render: () => 0 },
+            { key: "faculties", label: "Fakultas", render: (x) => x.faculties },
+            { key: "majors", label: "Jurusan", render: (x) => x.majors },
+            { key: "intakes", label: "Intake", render: (x) => x.intakes },
             {
               key: "status",
               label: "Status",
@@ -232,18 +232,18 @@ export default function UniversitasPage() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-border p-4">
                   <p className="font-semibold">Fakultas</p>
-                  <p className="mt-2 text-2xl font-bold">0</p>
-                  <p className="text-xs text-muted">Belum ada data fakultas</p>
+                  <p className="mt-2 text-2xl font-bold">{selected.faculties}</p>
+                  <p className="text-xs text-muted">{selected.faculties ? "Fakultas terdaftar" : "Belum ada data fakultas"}</p>
                 </div>
                 <div className="rounded-xl border border-border p-4">
                   <p className="font-semibold">Jurusan</p>
-                  <p className="mt-2 text-2xl font-bold">0</p>
-                  <p className="text-xs text-muted">Belum ada data jurusan</p>
+                  <p className="mt-2 text-2xl font-bold">{selected.majors}</p>
+                  <p className="text-xs text-muted">{selected.majors ? "Jurusan terdaftar" : "Belum ada data jurusan"}</p>
                 </div>
                 <div className="rounded-xl border border-border p-4">
                   <p className="font-semibold">Intake</p>
-                  <p className="mt-2 text-2xl font-bold">0</p>
-                  <p className="text-xs text-muted">Belum ada data intake</p>
+                  <p className="mt-2 text-2xl font-bold">{selected.intakes}</p>
+                  <p className="text-xs text-muted">{selected.intakes ? "Intake terdaftar" : "Belum ada data intake"}</p>
                 </div>
               </div>
             </>
