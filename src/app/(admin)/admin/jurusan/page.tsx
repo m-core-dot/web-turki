@@ -21,7 +21,7 @@ export default function JurusanPage() {
   const [importRows, setImportRows] = useState<Array<Record<string, unknown>>>([]);
   const [importError, setImportError] = useState("");
   const importRef = useRef<HTMLInputElement>(null);
-  const downloadTemplate = () => { const worksheet = XLSX.utils.aoa_to_sheet([["type", "name", "university", "faculty", "degree", "status"], ["major", "Computer Engineering", "Istanbul University", "Faculty of Engineering", "Bachelor", "active"]]); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Fakultas dan Jurusan"); XLSX.writeFile(workbook, "template-fakultas-dan-jurusan.xlsx"); };
+  const downloadTemplate = () => { const worksheet = XLSX.utils.aoa_to_sheet([["name", "university", "faculty", "degree", "status"], ["Computer Engineering", "Istanbul University", "Faculty of Engineering", "Bachelor", "active"]]); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Fakultas dan Jurusan"); XLSX.writeFile(workbook, "template-fakultas-dan-jurusan.xlsx"); };
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -32,12 +32,10 @@ export default function JurusanPage() {
         const workbook = XLSX.read(reader.result, { type: "array" });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
-        const required = ["type", "name", "university", "faculty", "degree", "status"];
+        const required = ["name", "university", "faculty", "degree", "status"];
         const errors = rows.flatMap((row, index) => required.filter((key) => !String(row[key] ?? "").trim()).map((key) => `Baris ${index + 2}: ${key} wajib diisi.`));
-        const validTypes = new Set(["major", "faculty"]);
         const validDegrees = new Set(["Bachelor", "Master", "Doctoral"]);
         rows.forEach((row, index) => {
-          if (!validTypes.has(String(row.type).trim())) errors.push(`Baris ${index + 2}: type harus major atau faculty.`);
           if (!validDegrees.has(String(row.degree).trim())) errors.push(`Baris ${index + 2}: degree harus Bachelor, Master, atau Doctoral.`);
           if (!new Set(["active", "inactive"]).has(String(row.status).trim())) errors.push(`Baris ${index + 2}: status harus active atau inactive.`);
           if (!universities.some((university) => university.name === String(row.university).trim())) errors.push(`Baris ${index + 2}: universitas tidak ditemukan atau tidak aktif.`);
