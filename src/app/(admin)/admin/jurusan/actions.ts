@@ -13,6 +13,12 @@ export type FacultyMajor = {
   type: "faculty" | "major";
 };
 
+export async function fetchUniversitiesForMajorForm() {
+  const { data, error } = await getSupabaseAdminClient().from("universities").select("id, name, city").eq("status", "active").order("name");
+  if (error) return { ok: false as const, message: error.message, data: [] as Array<{ id: string; name: string; city: string }> };
+  return { ok: true as const, data: data ?? [] };
+}
+
 export async function fetchFacultyMajors() {
   const { data, error } = await getSupabaseAdminClient()
     .from("majors")
