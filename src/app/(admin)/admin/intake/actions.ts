@@ -60,12 +60,24 @@ export async function fetchIntakes() {
 
 export async function saveIntake(values: { id?: string; universityId: string; name: string; openDate: string; closeDate: string }) {
   const supabase = getSupabaseAdminClient();
-  if (values.id) return { ok: false as const, message: "Edit intake belum tersedia." };
-  const { data: code, error: codeError } = await supabase.rpc("next_intake_code");
-  if (codeError) return { ok: false as const, message: codeError.message };
-  const { error } = await supabase.from("intakes").insert({ code, university_id: values.universityId, name: values.name.trim(), open_date: values.openDate || null, close_date: values.closeDate || null });
+  let code = values.id;
+  if (!code) {
+    const codeResult = await supabase.rpc("next_intake_code");
+    if (codeResult.error) return { ok: false as const, message: codeResult.error.message };
+    code = String(codeResult.data);
+  }
+  const payload = { university_id: values.universityId, name: values.name.trim(), open_date: values.openDate || null, close_date: values.closeDate || null };
+  const result = values.id
+    ? await supabase.from("intakes").update(payload).eq("code", values.id)
+    : await supabase.from("intakes").insert({ code, ...payload });
+  if (result.error) return { ok: false as const, message: result.error.message };
+  const refreshed = await fetchIntakes();
+  if (!refreshed.ok) return refreshed;
+  return { ok: true as const, data: refreshed.data.find((item) => item.id === code)! };
+}
+
+export async function deleteIntake(code: string) {
+  const { error } = await getSupabaseAdminClient().from("intakes").delete().eq("code", code);
   if (error) return { ok: false as const, message: error.message };
-  const result = await fetchIntakes();
-  if (!result.ok) return result;
-  return { ok: true as const, data: result.data.find((item) => item.id === code)! };
+  return { ok: true as const };
 }
