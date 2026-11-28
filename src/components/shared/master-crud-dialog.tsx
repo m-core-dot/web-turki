@@ -55,6 +55,13 @@ export function MasterCrudDialog({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (open) {
+      setValues(initialValues ?? {});
+      setError("");
+    }
+  }, [open, initialValues]);
+
   const update = (name: string, value: string) => setValues((current) => ({ ...current, [name]: value }));
   const submit = async () => {
     const missing = fields.find((field) => !values[field.name]?.trim());
