@@ -25,7 +25,6 @@ export const ADMIN_UNIVERSITY_NAV_ITEMS = [
     href: "/admin/universitas",
     icon: "GraduationCap" as const,
   },
-  { label: "Fakultas", href: "/admin/fakultas", icon: "Building2" as const },
   { label: "Jurusan", href: "/admin/jurusan", icon: "BookOpen" as const },
 ] as const;
 
