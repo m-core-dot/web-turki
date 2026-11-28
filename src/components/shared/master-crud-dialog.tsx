@@ -15,6 +15,7 @@ export type CrudField = {
   options?: { value: string; label: string }[];
   searchable?: boolean;
   noOptionsMessage?: string;
+  required?: boolean;
 };
 
 function SearchableField({ field, value, onChange }: { field: CrudField; value: string; onChange: (value: string) => void }) {
@@ -64,7 +65,7 @@ export function MasterCrudDialog({
 
   const update = (name: string, value: string) => setValues((current) => ({ ...current, [name]: value }));
   const submit = async () => {
-    const missing = fields.find((field) => !values[field.name]?.trim());
+    const missing = fields.find((field) => field.required !== false && !values[field.name]?.trim());
     if (missing) {
       setError(`${missing.label} wajib diisi.`);
       return;
