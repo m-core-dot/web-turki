@@ -55,6 +55,13 @@ export async function createFacultyMajor(values: { name: string; universityId: s
   return { ok: true as const };
 }
 
+export async function importFacultyMajors(rows: Array<{ name: string; universityId: string; faculty: string; degree: string; status: "active" | "inactive" }>) {
+  for (const row of rows) {
+    await createFacultyMajor(row);
+  }
+  return { ok: true as const, count: rows.length };
+}
+
 export async function fetchFacultyMajors() {
   const { data, error } = await getSupabaseAdminClient()
     .from("majors")
