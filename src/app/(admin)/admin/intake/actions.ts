@@ -4,6 +4,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import type { MockIntake } from "@/lib/mock-data";
 
 function statusForDates(openDate: string, closeDate: string): MockIntake["status"] {
+  if (!openDate || !closeDate) return "draft";
   const today = new Date().toISOString().slice(0, 10);
   if (today < openDate) return "upcoming";
   if (today > closeDate) return "closed";
@@ -23,8 +24,8 @@ export async function fetchIntakes() {
       const result = await supabase.from("majors").select("id", { count: "exact", head: true }).in("faculty_id", facultyIds);
       majors = result.count ?? 0;
     }
-    const openDate = String(item.open_date);
-    const closeDate = String(item.close_date);
+    const openDate = item.open_date ? String(item.open_date) : "";
+    const closeDate = item.close_date ? String(item.close_date) : "";
     return { id: item.code, university: university.name, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate) };
   }));
   return { ok: true as const, data: rows };
@@ -35,7 +36,7 @@ export async function saveIntake(values: { id?: string; universityId: string; na
   if (values.id) return { ok: false as const, message: "Edit intake belum tersedia." };
   const { data: code, error: codeError } = await supabase.rpc("next_intake_code");
   if (codeError) return { ok: false as const, message: codeError.message };
-  const { error } = await supabase.from("intakes").insert({ code, university_id: values.universityId, name: values.name.trim(), open_date: values.openDate, close_date: values.closeDate });
+  const { error } = await supabase.from("intakes").insert({ code, university_id: values.universityId, name: values.name.trim(), open_date: values.openDate || null, close_date: values.closeDate || null });
   if (error) return { ok: false as const, message: error.message };
   const result = await fetchIntakes();
   if (!result.ok) return result;

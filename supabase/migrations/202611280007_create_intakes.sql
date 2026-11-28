@@ -3,11 +3,11 @@ create table if not exists public.intakes (
   university_id uuid not null references public.universities(id) on delete cascade,
   code text not null unique,
   name text not null,
-  open_date date not null,
-  close_date date not null,
+  open_date date,
+  close_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint intakes_valid_dates check (close_date >= open_date)
+  constraint intakes_valid_dates check (open_date is null or close_date is null or close_date >= open_date)
 );
 
 create index if not exists intakes_university_id_idx on public.intakes(university_id);
