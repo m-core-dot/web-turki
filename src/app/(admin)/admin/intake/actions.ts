@@ -23,7 +23,8 @@ export async function fetchIntakes() {
   const rows = await Promise.all((intakes ?? []).map(async (item) => {
     const university = (universities ?? []).find((entry) => entry.id === item.university_id);
     if (!university) return null;
-    const { data: faculties } = await supabase.from("faculties").select("id").eq("university_id", item.university_id);
+    const { data: faculties, error: facultyError } = await supabase.from("faculties").select("id").eq("university_id", item.university_id);
+    if (facultyError) throw new Error(facultyError.message);
     const facultyIds = (faculties ?? []).map((faculty) => faculty.id);
     let majors = 0;
     if (facultyIds.length) {
@@ -36,14 +37,23 @@ export async function fetchIntakes() {
   }));
 
   const rowsByUniversity = new Set((intakes ?? []).map((item) => item.university_id));
-  const placeholders = (universities ?? []).filter((university) => !rowsByUniversity.has(university.id)).map((university) => ({
-    id: `UNIV-${university.id}`,
-    university: university.name,
-    name: "Belum ditentukan",
-    openDate: "",
-    closeDate: "",
-    majors: 0,
-    status: "draft" as const,
+  const placeholders = await Promise.all((universities ?? []).filter((university) => !rowsByUniversity.has(university.id)).map(async (university) => {
+    const { data: faculties } = await supabase.from("faculties").select("id").eq("university_id", university.id);
+    const facultyIds = (faculties ?? []).map((faculty) => faculty.id);
+    let majors = 0;
+    if (facultyIds.length) {
+      const result = await supabase.from("majors").select("id", { count: "exact", head: true }).in("faculty_id", facultyIds);
+      majors = result.count ?? 0;
+    }
+    return {
+      id: `UNIV-${university.id}`,
+      university: university.name,
+      name: "Belum ditentukan",
+      openDate: "",
+      closeDate: "",
+      majors,
+      status: "draft" as const,
+    };
   }));
   return { ok: true as const, data: [...rows.filter((row): row is MockIntake => row !== null), ...placeholders] };
 }
