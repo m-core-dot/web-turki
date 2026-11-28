@@ -11,6 +11,7 @@ export type IntakeRow = {
   name: string;
   openDate: string;
   closeDate: string;
+  announcement: string;
   majors: number;
   status: IntakeStatus;
   isPrimary: boolean;
@@ -28,7 +29,7 @@ export async function fetchIntakes() {
   const supabase = getSupabaseAdminClient();
   const [{ data: universities, error: universityError }, { data: intakes, error: intakeError }] = await Promise.all([
     supabase.from("universities").select("id, name, city").eq("status", "active").order("name"),
-    supabase.from("intakes").select("id, code, university_id, name, open_date, close_date").order("open_date", { nullsFirst: false }),
+    supabase.from("intakes").select("id, code, university_id, name, open_date, close_date, announcement").order("open_date", { nullsFirst: false }),
   ]);
   if (universityError) return { ok: false as const, message: universityError.message, data: [] as IntakeRow[] };
     if (intakeError) return { ok: false as const, message: intakeError.message, data: [] as IntakeRow[] };
@@ -46,7 +47,7 @@ export async function fetchIntakes() {
     }
     const openDate = item.open_date ? String(item.open_date) : "";
     const closeDate = item.close_date ? String(item.close_date) : "";
-    return { id: item.code, universityId: item.university_id, university: university.name, city: university.city, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate), isPrimary: item.name === "Belum ditentukan" };
+    return { id: item.code, universityId: item.university_id, university: university.name, city: university.city, name: item.name, openDate, closeDate, announcement: item.announcement ? String(item.announcement) : "", majors, status: statusForDates(openDate, closeDate), isPrimary: item.name === "Belum ditentukan" };
   }));
 
   const rowsByUniversity = new Set((intakes ?? []).map((item) => item.university_id));
@@ -66,6 +67,7 @@ export async function fetchIntakes() {
       name: "Belum ditentukan",
       openDate: "",
       closeDate: "",
+      announcement: "",
       majors,
       status: "draft" as const,
       isPrimary: true,
@@ -74,7 +76,7 @@ export async function fetchIntakes() {
   return { ok: true as const, data: [...rows.filter((row): row is IntakeRow => row !== null), ...placeholders] };
 }
 
-export async function saveIntake(values: { id?: string; universityId: string; name: string; openDate: string; closeDate: string }) {
+export async function saveIntake(values: { id?: string; universityId: string; name: string; openDate: string; closeDate: string; announcement: string }) {
   const supabase = getSupabaseAdminClient();
   let code = values.id;
   if (!code) {
@@ -82,7 +84,7 @@ export async function saveIntake(values: { id?: string; universityId: string; na
     if (codeResult.error) return { ok: false as const, message: codeResult.error.message };
     code = String(codeResult.data);
   }
-  const payload = { university_id: values.universityId, name: values.name.trim(), open_date: values.openDate || null, close_date: values.closeDate || null };
+  const payload = { university_id: values.universityId, name: values.name.trim(), open_date: values.openDate || null, close_date: values.closeDate || null, announcement: values.announcement.trim() || null };
   const result = values.id
     ? await supabase.from("intakes").update(payload).eq("code", values.id)
     : await supabase.from("intakes").insert({ code, ...payload });
