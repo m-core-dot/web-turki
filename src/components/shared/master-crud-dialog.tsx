@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 export type CrudField = {
   name: string;
   label: string;
-  type?: "text" | "date" | "select";
+  type?: "text" | "date" | "date-or-text" | "select";
   placeholder?: string;
   options?: { value: string; label: string }[];
   searchable?: boolean;
@@ -87,6 +87,8 @@ export function MasterCrudDialog({
                   <SearchableField key={field.name} field={field} value={values[field.name] ?? ""} onChange={(value) => update(field.name, value)} />
                 ) : field.type === "select" ? (
           <Select key={field.name} label={field.label} options={field.options ?? []} value={values[field.name] ?? ""} onChange={(value) => update(field.name, value)} placeholder={field.placeholder ?? "Pilih..."} />
+        ) : field.type === "date-or-text" ? (
+          <div key={field.name} className="space-y-1.5"><label className="block text-sm font-medium text-foreground">{field.label}</label><div className="grid gap-2 sm:grid-cols-[1fr_auto]"><Input type="text" value={values[field.name] ?? ""} onChange={(event) => update(field.name, event.target.value)} placeholder={field.placeholder ?? "Tulis keterangan..."} /><Input type="date" aria-label={`${field.label} (pilih tanggal)`} value={/^\d{4}-\d{2}-\d{2}$/.test(values[field.name] ?? "") ? values[field.name] : ""} onChange={(event) => update(field.name, event.target.value)} /></div></div>
         ) : (
           <Input key={field.name} label={field.label} type={field.type ?? "text"} value={values[field.name] ?? ""} onChange={(event) => update(field.name, event.target.value)} placeholder={field.placeholder} />
         ))}
