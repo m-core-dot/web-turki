@@ -47,25 +47,33 @@ export function MasterCrudDialog({
   fields: CrudField[];
   initialValues?: Record<string, string>;
   onClose: () => void;
-  onSubmit: (values: Record<string, string>) => void;
+  onSubmit: (values: Record<string, string>) => void | Promise<void>;
   submitLabel?: string;
 }) {
   const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const update = (name: string, value: string) => setValues((current) => ({ ...current, [name]: value }));
-  const submit = () => {
+  const submit = async () => {
     const missing = fields.find((field) => !values[field.name]?.trim());
     if (missing) {
       setError(`${missing.label} wajib diisi.`);
       return;
     }
     setError("");
-    onSubmit(values);
+    setSubmitting(true);
+    try {
+      await onSubmit(values);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Data gagal disimpan.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={title} description={description} footer={<><Button variant="outline" onClick={onClose}>Batal</Button><Button onClick={submit}>{submitLabel}</Button></>}>
+    <Dialog open={open} onClose={onClose} title={title} description={description} footer={<><Button variant="outline" onClick={onClose} disabled={submitting}>Batal</Button><Button onClick={submit} disabled={submitting}>{submitting ? "Menyimpan..." : submitLabel}</Button></>}>
       <div className="space-y-4">
         {fields.map((field) => field.type === "select" && field.searchable ? (
                   <SearchableField key={field.name} field={field} value={values[field.name] ?? ""} onChange={(value) => update(field.name, value)} />
