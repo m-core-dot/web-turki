@@ -13,11 +13,17 @@ function statusForDates(openDate: string, closeDate: string): MockIntake["status
 
 export async function fetchIntakes() {
   const supabase = getSupabaseAdminClient();
-  const { data, error } = await supabase.from("intakes").select("id, code, name, open_date, close_date, universities!inner(name)").order("open_date");
-  if (error) return { ok: false as const, message: error.message, data: [] as MockIntake[] };
-  const rows = await Promise.all((data ?? []).map(async (item) => {
-    const university = item.universities as unknown as { name: string };
-    const { data: faculties } = await supabase.from("faculties").select("id").eq("university_id", (item as { university_id?: string }).university_id ?? "");
+  const [{ data: universities, error: universityError }, { data: intakes, error: intakeError }] = await Promise.all([
+    supabase.from("universities").select("id, name").eq("status", "active").order("name"),
+    supabase.from("intakes").select("id, code, university_id, name, open_date, close_date").order("open_date", { nullsFirst: false }),
+  ]);
+  if (universityError) return { ok: false as const, message: universityError.message, data: [] as MockIntake[] };
+  if (intakeError) return { ok: false as const, message: intakeError.message, data: [] as MockIntake[] };
+
+  const rows = await Promise.all((intakes ?? []).map(async (item) => {
+    const university = (universities ?? []).find((entry) => entry.id === item.university_id);
+    if (!university) return null;
+    const { data: faculties } = await supabase.from("faculties").select("id").eq("university_id", item.university_id);
     const facultyIds = (faculties ?? []).map((faculty) => faculty.id);
     let majors = 0;
     if (facultyIds.length) {
@@ -28,7 +34,18 @@ export async function fetchIntakes() {
     const closeDate = item.close_date ? String(item.close_date) : "";
     return { id: item.code, university: university.name, name: item.name, openDate, closeDate, majors, status: statusForDates(openDate, closeDate) };
   }));
-  return { ok: true as const, data: rows };
+
+  const rowsByUniversity = new Set((intakes ?? []).map((item) => item.university_id));
+  const placeholders = (universities ?? []).filter((university) => !rowsByUniversity.has(university.id)).map((university) => ({
+    id: `UNIV-${university.id}`,
+    university: university.name,
+    name: "Belum ditentukan",
+    openDate: "",
+    closeDate: "",
+    majors: 0,
+    status: "draft" as const,
+  }));
+  return { ok: true as const, data: [...rows.filter((row): row is MockIntake => row !== null), ...placeholders] };
 }
 
 export async function saveIntake(values: { id?: string; universityId: string; name: string; openDate: string; closeDate: string }) {
